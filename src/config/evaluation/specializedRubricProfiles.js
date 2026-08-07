@@ -1,0 +1,22 @@
+export const targetRuleProfiles = Object.freeze({
+  TARGET_REALTIME: ['UNIVERSAL_BRIDGE', 'TARGET_REALTIME'],
+  TARGET_ANIMATION: ['UNIVERSAL_BRIDGE', 'TARGET_ANIMATION'],
+  TARGET_VIS: ['UNIVERSAL_BRIDGE', 'TARGET_VIS'],
+  TARGET_ENGINEERING: ['UNIVERSAL_BRIDGE', 'TARGET_ENGINEERING'],
+  TARGET_DIGITAL_TWIN: ['UNIVERSAL_BRIDGE', 'TARGET_DIGITAL_TWIN'],
+})
+
+export const platformRuleModules = Object.freeze({
+  mobile: 'PLATFORM_MOBILE',
+  web: 'PLATFORM_WEB',
+  pc: 'PLATFORM_PC',
+  console: 'PLATFORM_CONSOLE',
+  vr: 'PLATFORM_VR',
+  ar: 'PLATFORM_AR',
+  'offline-render': 'PLATFORM_OFFLINE_RENDER',
+  'film-render': 'PLATFORM_FILM_RENDER',
+  '3d-print': 'PLATFORM_3D_PRINT',
+  unspecified: 'PLATFORM_UNSPECIFIED',
+})
+
+export const specializedRubricVersion = 'SPECIALIZED_RUBRIC_FRAMEWORK_V1'

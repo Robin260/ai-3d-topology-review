@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "1.0.0",
+  "rubricId": "UNIVERSAL_RETOPO_V1",
+  "name": {
+    "zh": "AI低模重拓扑通用评测标准",
+    "en": "Universal AI Low-Poly Retopology Rubric"
+  },
+  "version": "1.0.0",
+  "description": {
+    "zh": "用于评估AI生成、自动减面、扫描重建或人工制作低模的基础拓扑质量。该标准不依赖具体生产目标，作为所有专项评测之前的通用基础层。",
+    "en": "A universal baseline rubric for evaluating topology quality in AI-generated, decimated, reconstructed or manually created low-poly meshes."
+  },
+  "totalWeight": 100,
+  "evaluationModes": [
+    {
+      "id": "LOW_POLY_ONLY",
+      "name": "仅低模评测",
+      "description": "只分析低模自身的网格健康、拓扑组织、密度和表面质量。"
+    },
+    {
+      "id": "REFERENCE_COMPARISON",
+      "name": "高低模对比评测",
+      "description": "同时使用高模或参考模型分析轮廓、体积、特征和表面偏差。"
+    }
+  ],
+  "scoreScale": {
+    "type": "INTEGER",
+    "minimum": 0,
+    "maximum": 5,
+    "levels": {
+      "0": "失败、缺失或结构无效",
+      "1": "严重，基本无法稳定使用",
+      "2": "较差，问题会影响后续流程",
+      "3": "合格，可以使用但存在明显改进空间",
+      "4": "良好，仅有少量可优化项",
+      "5": "优秀，无明显问题"
+    }
+  },
+  "dimensions": [
+    {
+      "id": "MESH_HEALTH",
+      "name": "网格健康",
+      "weight": 20,
+      "ruleIds": [
+        "MH_NON_MANIFOLD",
+        "MH_DUPLICATE",
+        "MH_ZERO_AREA",
+        "MH_HOLES",
+        "MH_INTERSECTION",
+        "MH_NORMAL_DIRECTION",
+        "MH_ISOLATED",
+        "MH_DEGENERATE"
+      ]
+    },
+    {
+      "id": "SHAPE_FIDELITY",
+      "name": "轮廓与形体保留",
+      "weight": 20,
+      "ruleIds": [
+        "SF_SILHOUETTE",
+        "SF_PRIMARY_VOLUME",
+        "SF_SECONDARY_FORM",
+        "SF_LANDMARKS",
+        "SF_CURVATURE",
+        "SF_DEVIATION"
+      ]
+    },
+    {
+      "id": "EDGE_FLOW",
+      "name": "边流合理性",
+      "weight": 18,
+      "ruleIds": [
+        "EF_CURVATURE",
+        "EF_FEATURE",
+        "EF_CONTINUITY",
+        "EF_RANDOMNESS",
+        "EF_POLE_PLACEMENT",
+        "EF_DIRECTION"
+      ]
+    },
+    {
+      "id": "LOOP_STRUCTURE",
+      "name": "环线与结构组织",
+      "weight": 12,
+      "ruleIds": [
+        "LS_OPENING_LOOP",
+        "LS_SUPPORT_LOOP",
+        "LS_SILHOUETTE_LOOP",
+        "LS_CONTINUITY",
+        "LS_TERMINATION",
+        "LS_REDUNDANT"
+      ]
+    },
+    {
+      "id": "DENSITY_EFFICIENCY",
+      "name": "面密度与低模效率",
+      "weight": 18,
+      "ruleIds": [
+        "DE_GLOBAL_BUDGET",
+        "DE_LOCAL_DENSITY",
+        "DE_DENSITY_GRADIENT",
+        "DE_SILHOUETTE_VALUE",
+        "DE_CURVATURE_VALUE",
+        "DE_HIDDEN_FACES",
+        "DE_ASPECT_RATIO",
+        "DE_OVER_DENSITY",
+        "DE_UNDER_DENSITY"
+      ]
+    },
+    {
+      "id": "SURFACE_QUALITY",
+      "name": "表面与法线表现",
+      "weight": 7,
+      "ruleIds": [
+        "SQ_NORMAL_CONTINUITY",
+        "SQ_SHADING_WAVE",
+        "SQ_HARD_EDGE",
+        "SQ_TRIANGULATION",
+        "SQ_FOLDING"
+      ]
+    },
+    {
+      "id": "EDITABILITY",
+      "name": "可编辑性与结构规范",
+      "weight": 5,
+      "ruleIds": [
+        "ED_READABILITY",
+        "ED_COMPONENTS",
+        "ED_CONTINUITY",
+        "ED_SYMMETRY",
+        "ED_MODIFIABILITY"
+      ]
+    }
+  ],
+  "gradeRules": [
+    {
+      "grade": "S",
+      "minimumScore": 90,
+      "maximumScore": 100,
+      "description": "拓扑组织优秀，可作为高质量基础低模。"
+    },
+    {
+      "grade": "A",
+      "minimumScore": 80,
+      "maximumScore": 89.99,
+      "description": "整体良好，只有少量局部优化项。"
+    },
+    {
+      "grade": "B",
+      "minimumScore": 70,
+      "maximumScore": 79.99,
+      "description": "基本可用，存在明显改进空间。"
+    },
+    {
+      "grade": "C",
+      "minimumScore": 60,
+      "maximumScore": 69.99,
+      "description": "勉强达到基础使用标准。"
+    },
+    {
+      "grade": "D",
+      "minimumScore": 50,
+      "maximumScore": 59.99,
+      "description": "需要较多修复，不建议直接进入生产。"
+    },
+    {
+      "grade": "E",
+      "minimumScore": 0,
+      "maximumScore": 49.99,
+      "description": "结构不合格，建议重新拓扑。"
+    }
+  ],
+  "severityLevels": [
+    {
+      "id": "FATAL",
+      "rank": 5,
+      "description": "模型无法读取、主体缺失或评测无法继续。"
+    },
+    {
+      "id": "CRITICAL",
+      "rank": 4,
+      "description": "会导致模型无法正常进入后续生产流程。"
+    },
+    {
+      "id": "MAJOR",
+      "rank": 3,
+      "description": "明显影响质量、性能、编辑或后续处理。"
+    },
+    {
+      "id": "MINOR",
+      "rank": 2,
+      "description": "不阻止使用，但建议优化。"
+    },
+    {
+      "id": "INFO",
+      "rank": 1,
+      "description": "最佳实践建议，默认不直接扣分。"
+    }
+  ],
+  "productionReadinessGates": [
+    {
+      "status": "PASS",
+      "conditions": {
+        "fatalIssueCount": 0,
+        "criticalIssueCount": 0,
+        "minimumOverallScore": 60,
+        "minimumMeshHealthScore": 12
+      }
+    },
+    {
+      "status": "CONDITIONAL_PASS",
+      "conditions": {
+        "fatalIssueCount": 0,
+        "minimumOverallScore": 50,
+        "maximumOverallScore": 69.99,
+        "maximumCriticalIssueCount": 2
+      }
+    },
+    {
+      "status": "FAIL",
+      "conditions": {
+        "any": [
+          {
+            "fatalIssueCountGreaterThan": 0
+          },
+          {
+            "overallScoreLessThan": 50
+          },
+          {
+            "meshHealthScoreLessThan": 8
+          }
+        ]
+      }
+    }
+  ],
+  "scoreFormula": {
+    "dimensionScore": "dimensionWeight * sum(applicableRuleScores) / sum(applicableRuleMaximumScores)",
+    "overallScore": "sum(dimensionScores)",
+    "coverage": "evaluatedRuleCount / applicableRuleCount",
+    "notEvaluatedPolicy": "NOT_EVALUATED规则不计入分子和分母，不得按0分处理。"
+  }
+}

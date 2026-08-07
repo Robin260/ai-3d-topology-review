@@ -1,0 +1,30 @@
+# TopoLens local automatic evaluation diagnostic asset
+# Intentionally contains a duplicate face, a zero-area face, and a non-manifold shared edge.
+o AutoEvaluationDiagnostic
+v -1.0 -1.0 -1.0
+v  1.0 -1.0 -1.0
+v  1.0  1.0 -1.0
+v -1.0  1.0 -1.0
+v -1.0 -1.0  1.0
+v  1.0 -1.0  1.0
+v  1.0  1.0  1.0
+v -1.0  1.0  1.0
+v  0.0  0.0  2.0
+f 1 2 3
+f 1 3 4
+f 5 7 6
+f 5 8 7
+f 1 5 6
+f 1 6 2
+f 2 6 7
+f 2 7 3
+f 3 7 8
+f 3 8 4
+f 4 8 5
+f 4 5 1
+# Duplicate face
+f 1 2 3
+# Third face sharing edge 1-2 creates a non-manifold edge
+f 1 2 9
+# Zero-area face
+f 1 1 2

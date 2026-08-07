@@ -1,0 +1,8 @@
+* { box-sizing: border-box; }
+html { min-width: 320px; scroll-behavior: smooth; background: var(--color-background); }
+body { min-width: 320px; min-height: 100vh; margin: 0; color: var(--color-text-primary); background: var(--color-background); font-family: var(--font-family-ui); font-size: var(--font-size-md); text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible { outline: 3px solid rgba(22,119,255,.24); outline-offset: 3px; }
+::selection { color: var(--color-text-primary); background: rgba(22,119,255,.18); }
+.route-loading { min-height: 55vh; display: grid; place-items: center; color: var(--color-text-secondary); font-size: 13px; }

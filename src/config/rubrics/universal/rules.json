@@ -1,0 +1,1324 @@
+{
+  "schemaVersion": "1.0.0",
+  "rubricId": "UNIVERSAL_RETOPO_V1",
+  "evaluationTypes": [
+    "AUTOMATIC",
+    "AI_VISUAL",
+    "HYBRID",
+    "MANUAL_REVIEW"
+  ],
+  "applicableModes": [
+    "LOW_POLY_ONLY",
+    "REFERENCE_COMPARISON"
+  ],
+  "rules": [
+    {
+      "id": "MH_NON_MANIFOLD",
+      "dimensionId": "MESH_HEALTH",
+      "name": "非流形结构",
+      "description": "检测非流形边、异常多面连接及无法构成有效表面的拓扑关系。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "CRITICAL",
+      "metrics": [
+        "nonManifoldEdgeCount",
+        "nonManifoldVertexCount"
+      ],
+      "scoreCriteria": {
+        "0": "主体结构无效或无法正常解析。",
+        "1": "大量非流形结构。",
+        "2": "存在多处问题并影响编辑或导出。",
+        "3": "存在少量可快速修复的问题。",
+        "4": "仅有极少量低风险问题，且不位于主体区域。",
+        "5": "数量为0。"
+      },
+      "suggestions": [
+        "清理异常连接边。",
+        "删除内部重复面。",
+        "重新合并或拆分异常顶点。"
+      ]
+    },
+    {
+      "id": "MH_DUPLICATE",
+      "dimensionId": "MESH_HEALTH",
+      "name": "重复几何",
+      "description": "检测重复顶点、重复边、重叠面和完全相同的重复面。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "duplicateVertexCount",
+        "duplicateFaceCount",
+        "overlappingFaceCount"
+      ],
+      "scoreCriteria": {
+        "0": "重复几何覆盖主体模型。",
+        "1": "大量重复面或重叠结构。",
+        "2": "重复几何明显影响法线或编辑。",
+        "3": "存在少量重复面但可快速清理。",
+        "4": "仅有少量孤立重复顶点。",
+        "5": "无重复几何。"
+      },
+      "suggestions": [
+        "合并阈值范围内的重复顶点。",
+        "删除重叠面。",
+        "检查镜像和复制操作残留。"
+      ]
+    },
+    {
+      "id": "MH_ZERO_AREA",
+      "dimensionId": "MESH_HEALTH",
+      "name": "零面积几何",
+      "description": "检测零面积面、零长度边和重合顶点形成的无效几何。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "zeroAreaFaceCount",
+        "zeroLengthEdgeCount"
+      ],
+      "scoreCriteria": {
+        "0": "网格无法稳定处理。",
+        "1": "大面积出现无效几何。",
+        "2": "问题数量较多并影响三角化。",
+        "3": "存在少量问题但不影响主体。",
+        "4": "仅有极少量孤立问题。",
+        "5": "无零面积面和零长度边。"
+      },
+      "suggestions": [
+        "删除退化面。",
+        "合并重合顶点。",
+        "重新构建局部网格。"
+      ]
+    },
+    {
+      "id": "MH_HOLES",
+      "dimensionId": "MESH_HEALTH",
+      "name": "非设计性破洞",
+      "description": "识别模型中非预期的开放边界、缺失面和破损区域。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "CRITICAL",
+      "metrics": [
+        "boundaryLoopCount",
+        "unexpectedHoleCount",
+        "holeAreaRatio"
+      ],
+      "scoreCriteria": {
+        "0": "模型严重破损或不完整。",
+        "1": "主体存在大面积缺失。",
+        "2": "破洞影响主体表面连续性。",
+        "3": "存在少量可修补破洞。",
+        "4": "存在极小且低风险的开放区域。",
+        "5": "不存在非设计性破洞。"
+      },
+      "suggestions": [
+        "确认开放边是否为设计结构。",
+        "填补非预期破洞。",
+        "重新生成破损区域拓扑。"
+      ]
+    },
+    {
+      "id": "MH_INTERSECTION",
+      "dimensionId": "MESH_HEALTH",
+      "name": "自相交",
+      "description": "检测模型自身表面之间的非设计性穿插和交叉。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "selfIntersectionCount",
+        "intersectionAreaRatio"
+      ],
+      "scoreCriteria": {
+        "0": "模型主体严重纠缠。",
+        "1": "大面积自相交。",
+        "2": "多处穿插影响表面或烘焙。",
+        "3": "存在少量局部穿插。",
+        "4": "仅存在极少量边界接触。",
+        "5": "无非设计性自相交。"
+      },
+      "suggestions": [
+        "分离穿插表面。",
+        "删除内部无效几何。",
+        "重新调整局部轮廓。"
+      ]
+    },
+    {
+      "id": "MH_NORMAL_DIRECTION",
+      "dimensionId": "MESH_HEALTH",
+      "name": "法线方向一致性",
+      "description": "检测反向法线、法线方向不一致和局部翻面。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "CRITICAL",
+      "metrics": [
+        "flippedFaceCount",
+        "flippedFaceRatio",
+        "normalIslandCount"
+      ],
+      "scoreCriteria": {
+        "0": "无法建立可靠内外方向。",
+        "1": "大面积法线翻转。",
+        "2": "局部区域法线明显混乱。",
+        "3": "少量翻面可快速修复。",
+        "4": "仅有极少量孤立翻面。",
+        "5": "法线方向完全一致。"
+      },
+      "suggestions": [
+        "统一法线方向。",
+        "检查负缩放和镜像结果。",
+        "重新计算顶点法线。"
+      ]
+    },
+    {
+      "id": "MH_ISOLATED",
+      "dimensionId": "MESH_HEALTH",
+      "name": "孤立几何",
+      "description": "检测无用途的孤立顶点、孤立边和微小独立面片。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "isolatedVertexCount",
+        "isolatedEdgeCount",
+        "smallShellCount"
+      ],
+      "scoreCriteria": {
+        "0": "模型主要由无组织碎片组成。",
+        "1": "大量碎片化几何。",
+        "2": "孤立结构较多并影响管理。",
+        "3": "存在少量可清理的小面片。",
+        "4": "仅有少量孤立顶点。",
+        "5": "无无效孤立几何。"
+      },
+      "suggestions": [
+        "删除无效孤立元素。",
+        "确认独立部件是否属于设计结构。",
+        "合并需要保留的小型组件。"
+      ]
+    },
+    {
+      "id": "MH_DEGENERATE",
+      "dimensionId": "MESH_HEALTH",
+      "name": "薄片与退化面",
+      "description": "检测极窄、极扭曲或几何质量过差的三角面和多边形。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "degenerateFaceCount",
+        "sliverTriangleRatio",
+        "minimumFaceAngle"
+      ],
+      "scoreCriteria": {
+        "0": "网格整体不稳定。",
+        "1": "大量细长或折叠面。",
+        "2": "退化面造成阴影或编辑问题。",
+        "3": "局部存在细长面但不影响表面。",
+        "4": "仅有极少量细长面。",
+        "5": "无明显退化面。"
+      },
+      "suggestions": [
+        "重新分配局部顶点。",
+        "合并过短边。",
+        "避免极端长宽比三角面。"
+      ]
+    },
+    {
+      "id": "SF_SILHOUETTE",
+      "dimensionId": "SHAPE_FIDELITY",
+      "name": "主轮廓保留",
+      "description": "比较正面、侧面、顶部和透视角度下的高低模外轮廓。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "silhouetteIoU",
+        "silhouetteDistanceMean",
+        "silhouetteDistanceMax"
+      ],
+      "scoreCriteria": {
+        "0": "无法识别原始形体。",
+        "1": "主体轮廓严重改变。",
+        "2": "多个关键轮廓明显失真。",
+        "3": "部分轮廓出现可见简化。",
+        "4": "存在轻微偏差但不影响识别。",
+        "5": "主要视角轮廓高度一致。"
+      },
+      "suggestions": [
+        "在外轮廓转折处增加顶点。",
+        "减少平面内部无效面数。",
+        "优先修复高可见视角轮廓。"
+      ]
+    },
+    {
+      "id": "SF_PRIMARY_VOLUME",
+      "dimensionId": "SHAPE_FIDELITY",
+      "name": "一级体积保留",
+      "description": "比较模型整体长宽高、主体体积和大型比例关系。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "boundingBoxDeviation",
+        "volumeDeviationRatio",
+        "principalAxisDeviation"
+      ],
+      "scoreCriteria": {
+        "0": "主体体积无法对应。",
+        "1": "整体比例严重失真。",
+        "2": "主体体积明显塌陷或膨胀。",
+        "3": "部分比例有可见偏差。",
+        "4": "存在轻微体积变化。",
+        "5": "整体体积和比例高度一致。"
+      },
+      "suggestions": [
+        "恢复主要体块比例。",
+        "检查自动投射距离。",
+        "避免平均化关键体积。"
+      ]
+    },
+    {
+      "id": "SF_SECONDARY_FORM",
+      "dimensionId": "SHAPE_FIDELITY",
+      "name": "二级形体保留",
+      "description": "分析大型凹凸结构、转折和次级体块是否得到保留。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "secondaryFormRetentionScore"
+      ],
+      "scoreCriteria": {
+        "0": "低模仅剩粗略外壳。",
+        "1": "大部分次级形体丢失。",
+        "2": "多个重要结构被削平。",
+        "3": "部分次级体块变弱。",
+        "4": "少量次级结构略有简化。",
+        "5": "次级形体完整且清晰。"
+      },
+      "suggestions": [
+        "为重要凹凸结构保留几何。",
+        "删除不能被当前面数表达的微小噪声。",
+        "优先保留影响识别的次级形体。"
+      ]
+    },
+    {
+      "id": "SF_LANDMARKS",
+      "dimensionId": "SHAPE_FIDELITY",
+      "name": "关键特征点保留",
+      "description": "检测突起、凹陷、开口、边缘和标志性结构是否被保留。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "landmarkRetentionRatio",
+        "missingLandmarkCount"
+      ],
+      "scoreCriteria": {
+        "0": "模型失去主要识别性。",
+        "1": "多个识别特征消失。",
+        "2": "重要特征缺失或位置偏移。",
+        "3": "部分特征明显简化。",
+        "4": "仅有非核心特征略有损失。",
+        "5": "所有关键特征点均被准确保留。"
+      },
+      "suggestions": [
+        "提高关键特征周围面密度。",
+        "将极点移出关键特征中心。",
+        "为开口和锐利转折建立结构环线。"
+      ]
+    },
+    {
+      "id": "SF_CURVATURE",
+      "dimensionId": "SHAPE_FIDELITY",
+      "name": "曲率连续性",
+      "description": "判断曲面是否出现不合理折断、塌陷、鼓包或曲率突变。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "curvatureDiscontinuityCount",
+        "curvatureVariance",
+        "surfaceKinkCount"
+      ],
+      "scoreCriteria": {
+        "0": "表面形体严重失效。",
+        "1": "曲面大面积塌陷或鼓包。",
+        "2": "多个区域出现明显折断。",
+        "3": "局部曲率过渡较生硬。",
+        "4": "存在少量轻微折线。",
+        "5": "曲率变化自然连续。"
+      },
+      "suggestions": [
+        "调整高曲率区域顶点位置。",
+        "增加必要的轮廓支撑点。",
+        "减少密度突变。"
+      ]
+    },
+    {
+      "id": "SF_DEVIATION",
+      "dimensionId": "SHAPE_FIDELITY",
+      "name": "高低模表面偏差",
+      "description": "计算低模表面相对于参考模型的平均距离、最大距离和超阈值区域。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "meanSurfaceDeviation",
+        "maxSurfaceDeviation",
+        "outlierAreaRatio"
+      ],
+      "scoreCriteria": {
+        "0": "高低模基本不对应。",
+        "1": "大面积无法贴合参考模型。",
+        "2": "多个关键区域偏差明显。",
+        "3": "部分区域超过建议阈值。",
+        "4": "少量局部偏差。",
+        "5": "表面偏差极低且分布稳定。"
+      },
+      "suggestions": [
+        "重新投射低模顶点。",
+        "重点修复偏差热力图中的高值区域。",
+        "区分设计性简化和错误偏移。"
+      ]
+    },
+    {
+      "id": "EF_CURVATURE",
+      "dimensionId": "EDGE_FLOW",
+      "name": "曲率跟随",
+      "description": "判断边线是否沿曲面主要弯曲方向和形体变化方向组织。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "edgeCurvatureAlignmentScore"
+      ],
+      "scoreCriteria": {
+        "0": "边流完全随机。",
+        "1": "边线大面积横切主要形体。",
+        "2": "多个高曲率区域边流错误。",
+        "3": "边流基本可读但不够稳定。",
+        "4": "少量区域方向略有偏差。",
+        "5": "边流清晰跟随主要曲率。"
+      },
+      "suggestions": [
+        "沿主要曲率方向重定向边线。",
+        "避免在曲率中心形成杂乱极点。",
+        "减少无功能的对角边。"
+      ]
+    },
+    {
+      "id": "EF_FEATURE",
+      "dimensionId": "EDGE_FLOW",
+      "name": "特征跟随",
+      "description": "判断边流是否围绕开口、凹槽、凸起、硬边和结构分区进行组织。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "featureAlignmentScore"
+      ],
+      "scoreCriteria": {
+        "0": "边流与模型特征无关。",
+        "1": "特征区域结构混乱。",
+        "2": "多个重要特征缺乏边流支持。",
+        "3": "部分结构得到表达。",
+        "4": "非核心特征附近略有偏差。",
+        "5": "边流完整表达关键结构。"
+      },
+      "suggestions": [
+        "围绕开口建立闭合边流。",
+        "沿硬表面转折建立结构边。",
+        "确保关键特征可被单独编辑。"
+      ]
+    },
+    {
+      "id": "EF_CONTINUITY",
+      "dimensionId": "EDGE_FLOW",
+      "name": "边流连续性",
+      "description": "检测边带是否无意义中断、反复转向或突然改变密度。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "edgeFlowBreakCount",
+        "directionChangeVariance"
+      ],
+      "scoreCriteria": {
+        "0": "无法识别有效边流。",
+        "1": "边流碎片化严重。",
+        "2": "多处突然终止或转向。",
+        "3": "局部边流不够顺畅。",
+        "4": "少量低风险中断。",
+        "5": "边流连续且功能清晰。"
+      },
+      "suggestions": [
+        "将环线终止在低风险区域。",
+        "减少短边链。",
+        "统一相邻区域边流方向。"
+      ]
+    },
+    {
+      "id": "EF_RANDOMNESS",
+      "dimensionId": "EDGE_FLOW",
+      "name": "边流随机性控制",
+      "description": "检测无规律锯齿边、随机三角化、扭曲面和缺乏方向性的连接。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "topologyRandomnessScore",
+        "irregularEdgeRatio"
+      ],
+      "scoreCriteria": {
+        "0": "接近无规则三角网格。",
+        "1": "大面积拓扑随机。",
+        "2": "多个区域出现明显锯齿或乱线。",
+        "3": "局部存在随机感。",
+        "4": "仅有少量不规则连接。",
+        "5": "拓扑规律清晰。"
+      },
+      "suggestions": [
+        "重建随机三角区域。",
+        "减少不必要的边方向变化。",
+        "按形体分区重新规划拓扑。"
+      ]
+    },
+    {
+      "id": "EF_POLE_PLACEMENT",
+      "dimensionId": "EDGE_FLOW",
+      "name": "极点位置",
+      "description": "判断高价顶点和环线汇聚点是否位于平坦、低变形和低视觉风险区域。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "poleCountByValence",
+        "highRiskPoleCount",
+        "poleCurvatureCorrelation"
+      ],
+      "scoreCriteria": {
+        "0": "极点结构导致表面失效。",
+        "1": "极点集中造成明显夹痕。",
+        "2": "多个极点位于关键曲率或轮廓。",
+        "3": "存在可接受但不理想的极点。",
+        "4": "少量极点接近高曲率区域。",
+        "5": "极点数量和位置合理。"
+      },
+      "suggestions": [
+        "将极点移动到平坦区域。",
+        "避免极点位于轮廓和关键特征中心。",
+        "重新分流过度汇聚的环线。"
+      ]
+    },
+    {
+      "id": "EF_DIRECTION",
+      "dimensionId": "EDGE_FLOW",
+      "name": "结构方向性",
+      "description": "判断拓扑是否体现模型的主要轴向、结构方向和潜在运动方向。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "structuralDirectionScore"
+      ],
+      "scoreCriteria": {
+        "0": "不存在可识别结构方向。",
+        "1": "拓扑方向阻碍编辑和理解。",
+        "2": "多个区域方向矛盾。",
+        "3": "基本体现主要结构方向。",
+        "4": "少量局部方向不够明确。",
+        "5": "拓扑方向与结构完全一致。"
+      },
+      "suggestions": [
+        "沿模型长轴和结构轴组织边线。",
+        "保持相邻区域方向连续。",
+        "为潜在变形预留方向性拓扑。"
+      ]
+    },
+    {
+      "id": "LS_OPENING_LOOP",
+      "dimensionId": "LOOP_STRUCTURE",
+      "name": "开口环线",
+      "description": "检查洞口、管道、眼口结构及其他开口周围是否具有合理闭合环线。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "openingLoopCoverage",
+        "brokenOpeningLoopCount"
+      ],
+      "scoreCriteria": {
+        "0": "开口拓扑无法编辑或维持形体。",
+        "1": "主要开口缺乏环线。",
+        "2": "多个开口结构不稳定。",
+        "3": "主要开口基本得到支持。",
+        "4": "次要开口环线略不完整。",
+        "5": "所有主要开口均有清晰环线。"
+      },
+      "suggestions": [
+        "围绕开口建立闭合环线。",
+        "保持环线间距与曲率一致。",
+        "避免极点直接落在开口边缘。"
+      ]
+    },
+    {
+      "id": "LS_SUPPORT_LOOP",
+      "dimensionId": "LOOP_STRUCTURE",
+      "name": "转折支撑环",
+      "description": "检查硬边、高曲率转折和需要保持锐度的区域是否有足够支撑。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "supportLoopAdequacyScore"
+      ],
+      "scoreCriteria": {
+        "0": "形体无法维持。",
+        "1": "重要硬边和曲率被破坏。",
+        "2": "多个转折缺乏结构支持。",
+        "3": "主要转折基本得到支持。",
+        "4": "少量转折略显柔软。",
+        "5": "支撑环线数量和位置合理。"
+      },
+      "suggestions": [
+        "在必要转折附近增加支撑环。",
+        "避免在平坦区域堆积支撑环。",
+        "根据目标曲率调整环线距离。"
+      ]
+    },
+    {
+      "id": "LS_SILHOUETTE_LOOP",
+      "dimensionId": "LOOP_STRUCTURE",
+      "name": "轮廓环线",
+      "description": "判断环线是否有效支撑外轮廓及主要视觉转折。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "silhouetteLoopContributionScore"
+      ],
+      "scoreCriteria": {
+        "0": "轮廓结构严重失真。",
+        "1": "主体轮廓明显多边形化。",
+        "2": "多个轮廓区域出现折线。",
+        "3": "主要轮廓可接受。",
+        "4": "仅有少量轮廓点不足。",
+        "5": "轮廓区域环线分布高效。"
+      },
+      "suggestions": [
+        "将几何资源优先分配到外轮廓。",
+        "减少内部平面冗余环线。",
+        "根据观察距离控制轮廓细分。"
+      ]
+    },
+    {
+      "id": "LS_CONTINUITY",
+      "dimensionId": "LOOP_STRUCTURE",
+      "name": "环线连续性",
+      "description": "检测关键环线是否连续、是否存在无意义断裂和局部失序。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "continuousLoopCount",
+        "brokenLoopCount",
+        "averageLoopLength"
+      ],
+      "scoreCriteria": {
+        "0": "无法识别有效环线。",
+        "1": "环线结构大面积碎片化。",
+        "2": "多个关键环线中断。",
+        "3": "部分环线需要人工整理。",
+        "4": "少量次要断裂。",
+        "5": "关键环线连续且清晰。"
+      },
+      "suggestions": [
+        "重新连接关键边带。",
+        "减少不必要的环线分叉。",
+        "将终止点移到低风险区域。"
+      ]
+    },
+    {
+      "id": "LS_TERMINATION",
+      "dimensionId": "LOOP_STRUCTURE",
+      "name": "环线终止",
+      "description": "判断环线终止和汇聚位置是否合理，是否造成表面夹痕。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "highRiskTerminationCount"
+      ],
+      "scoreCriteria": {
+        "0": "环线终止导致整体结构失效。",
+        "1": "终止结构明显破坏表面。",
+        "2": "多个终止点造成局部不稳定。",
+        "3": "存在可接受但不理想的终止。",
+        "4": "少量终止点接近曲率区域。",
+        "5": "环线终止位置合理。"
+      },
+      "suggestions": [
+        "将终止点移至平坦区域。",
+        "使用合理极点分流环线。",
+        "避免在轮廓和关键特征处突然终止。"
+      ]
+    },
+    {
+      "id": "LS_REDUNDANT",
+      "dimensionId": "LOOP_STRUCTURE",
+      "name": "冗余环线",
+      "description": "检测不贡献轮廓、曲率、结构、变形或细节承载的无效环线。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "redundantLoopCount",
+        "redundantLoopRatio"
+      ],
+      "scoreCriteria": {
+        "0": "模型未进行有效低模化。",
+        "1": "大量环线无形体贡献。",
+        "2": "冗余环线明显浪费面数。",
+        "3": "部分平坦区域略显过密。",
+        "4": "存在少量低价值环线。",
+        "5": "环线均具有明确作用。"
+      },
+      "suggestions": [
+        "删除平坦区域中的无效环线。",
+        "保留影响轮廓和曲率的环线。",
+        "将面数转移到高价值区域。"
+      ]
+    },
+    {
+      "id": "DE_GLOBAL_BUDGET",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "全局面数效率",
+      "description": "根据模型形体复杂度判断总顶点数和总三角面数是否合理。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "vertexCount",
+        "triangleCount",
+        "surfaceComplexityIndex",
+        "triangleEfficiencyScore"
+      ],
+      "scoreCriteria": {
+        "0": "未形成有效低模。",
+        "1": "面数与形体需求严重不匹配。",
+        "2": "明显过高或过低。",
+        "3": "总体面数基本合理。",
+        "4": "存在少量可压缩空间。",
+        "5": "面数与形体复杂度高度匹配。"
+      },
+      "suggestions": [
+        "结合曲率和轮廓重新分配面数。",
+        "避免只按固定比例减面。",
+        "根据最终生产目标追加预算规则。"
+      ]
+    },
+    {
+      "id": "DE_LOCAL_DENSITY",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "局部密度分布",
+      "description": "判断高曲率、轮廓和关键特征区域是否获得比平坦区域更多几何资源。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "triangleDensityMap",
+        "densityCurvatureCorrelation"
+      ],
+      "scoreCriteria": {
+        "0": "面密度完全随机。",
+        "1": "高价值区过疏、低价值区过密。",
+        "2": "多个区域密度配置错误。",
+        "3": "总体分配可接受。",
+        "4": "少量区域分配略不均。",
+        "5": "密度与曲率和特征高度匹配。"
+      },
+      "suggestions": [
+        "提高轮廓和高曲率区域密度。",
+        "降低平坦区域密度。",
+        "使用密度热力图定位异常区域。"
+      ]
+    },
+    {
+      "id": "DE_DENSITY_GRADIENT",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "密度变化平滑度",
+      "description": "检测相邻区域的边长和面密度是否出现不合理骤变。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "densityGradientMax",
+        "densityJumpCount",
+        "adjacentEdgeLengthRatio"
+      ],
+      "scoreCriteria": {
+        "0": "密度分布严重失控。",
+        "1": "大范围密度不连续。",
+        "2": "多个区域密度骤变。",
+        "3": "部分区域过渡较急。",
+        "4": "少量轻微跳变。",
+        "5": "密度变化自然平滑。"
+      },
+      "suggestions": [
+        "增加过渡环线。",
+        "减少相邻边长差异。",
+        "避免高密度区域突然连接超大多边形。"
+      ]
+    },
+    {
+      "id": "DE_SILHOUETTE_VALUE",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "轮廓贡献率",
+      "description": "分析顶点和边是否对观察视角下的外轮廓产生实际贡献。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "silhouetteContributingVertexRatio",
+        "lowValueBoundaryVertexCount"
+      ],
+      "scoreCriteria": {
+        "0": "几何无法支撑基本轮廓。",
+        "1": "轮廓多边形化严重。",
+        "2": "轮廓资源分配明显不足或浪费。",
+        "3": "轮廓结构基本合理。",
+        "4": "少量轮廓顶点贡献较低。",
+        "5": "轮廓几何利用率高。"
+      },
+      "suggestions": [
+        "将顶点放在轮廓曲率变化处。",
+        "删除直线轮廓中的无效顶点。",
+        "针对主要观察角度优化轮廓。"
+      ]
+    },
+    {
+      "id": "DE_CURVATURE_VALUE",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "曲率贡献率",
+      "description": "判断面数是否被用于表达真实曲率，而不是平均分布或随机堆积。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "curvatureWeightedTriangleEfficiency",
+        "flatRegionTriangleRatio"
+      ],
+      "scoreCriteria": {
+        "0": "几何资源基本无效。",
+        "1": "大量面不贡献曲率。",
+        "2": "资源分配效率较低。",
+        "3": "整体曲率表达可接受。",
+        "4": "少量平面区域存在冗余。",
+        "5": "绝大多数面有效支持曲率。"
+      },
+      "suggestions": [
+        "压缩低曲率区域。",
+        "提高曲率峰值附近密度。",
+        "根据曲率图重新布置边线。"
+      ]
+    },
+    {
+      "id": "DE_HIDDEN_FACES",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "隐藏面冗余",
+      "description": "检测完全位于模型内部、长期不可见或被其他封闭部件完全覆盖的面。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "internalFaceCount",
+        "occludedFaceRatio"
+      ],
+      "scoreCriteria": {
+        "0": "内部冗余接近或超过外部有效几何。",
+        "1": "大量不可见内部结构。",
+        "2": "隐藏面明显浪费预算。",
+        "3": "部分内部面可进一步清理。",
+        "4": "存在极少量低成本隐藏面。",
+        "5": "无明显无效隐藏面。"
+      },
+      "suggestions": [
+        "删除永久不可见内部面。",
+        "保留生产流程确实需要的遮挡结构。",
+        "区分可拆卸部件和永久封闭部件。"
+      ]
+    },
+    {
+      "id": "DE_ASPECT_RATIO",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "面长宽比",
+      "description": "检测极长、极窄和角度过小的三角面或四边面。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "faceAspectRatioMean",
+        "faceAspectRatioMax",
+        "poorAspectFaceRatio"
+      ],
+      "scoreCriteria": {
+        "0": "面形状大面积退化。",
+        "1": "细长面造成明显阴影或编辑问题。",
+        "2": "大量面具有较差长宽比。",
+        "3": "局部存在可接受的细长面。",
+        "4": "少量细长面。",
+        "5": "面形状稳定且均衡。"
+      },
+      "suggestions": [
+        "重新移动局部顶点。",
+        "减少极短边。",
+        "避免无必要的长条三角面。"
+      ]
+    },
+    {
+      "id": "DE_OVER_DENSITY",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "局部过密",
+      "description": "检测平坦、低曲率或低可见区域中不必要的高密度几何。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "overDenseAreaRatio",
+        "redundantTriangleEstimate"
+      ],
+      "scoreCriteria": {
+        "0": "整体仍接近高模或原始扫描密度。",
+        "1": "大面积未有效低模化。",
+        "2": "多个平坦区域明显浪费面数。",
+        "3": "存在可优化的过密区域。",
+        "4": "少量区域略显密集。",
+        "5": "无明显局部过密。"
+      },
+      "suggestions": [
+        "删除不贡献形体的环线。",
+        "合并平坦区域面片。",
+        "将预算转移到轮廓和曲率区域。"
+      ]
+    },
+    {
+      "id": "DE_UNDER_DENSITY",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "name": "局部过疏",
+      "description": "检测轮廓、高曲率、关键特征和结构转折区域中的面数不足。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "underDenseAreaRatio",
+        "curvatureApproximationError"
+      ],
+      "scoreCriteria": {
+        "0": "模型无法表达基本形体。",
+        "1": "轮廓和曲率明显失真。",
+        "2": "多个关键区域面数不足。",
+        "3": "主要形体可接受。",
+        "4": "少量区域略显多边形化。",
+        "5": "关键区域密度充分。"
+      },
+      "suggestions": [
+        "在轮廓和高曲率区域增加边。",
+        "恢复丢失的关键特征。",
+        "避免平均化减面。"
+      ]
+    },
+    {
+      "id": "SQ_NORMAL_CONTINUITY",
+      "dimensionId": "SURFACE_QUALITY",
+      "name": "法线连续性",
+      "description": "检查平滑曲面上的法线和明暗过渡是否连续。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "normalDiscontinuityCount",
+        "normalAngleVariance"
+      ],
+      "scoreCriteria": {
+        "0": "无法获得有效表面着色。",
+        "1": "大面积法线混乱。",
+        "2": "多个曲面出现明显断裂。",
+        "3": "局部过渡略显生硬。",
+        "4": "存在少量轻微断点。",
+        "5": "法线过渡稳定自然。"
+      },
+      "suggestions": [
+        "统一平滑组策略。",
+        "修复异常顶点法线。",
+        "检查拓扑折叠和极点夹痕。"
+      ]
+    },
+    {
+      "id": "SQ_SHADING_WAVE",
+      "dimensionId": "SURFACE_QUALITY",
+      "name": "阴影波浪",
+      "description": "识别平面和规则曲面上的异常波浪、凹凸和光带断裂。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "shadingArtifactScore"
+      ],
+      "scoreCriteria": {
+        "0": "着色结果不可用。",
+        "1": "表面质量严重受损。",
+        "2": "多个区域阴影明显异常。",
+        "3": "部分区域存在可见波浪。",
+        "4": "仅有轻微不稳定区域。",
+        "5": "无异常阴影波浪。"
+      },
+      "suggestions": [
+        "检查细长面和极点。",
+        "重新调整表面顶点。",
+        "检查硬边与平滑组设置。"
+      ]
+    },
+    {
+      "id": "SQ_HARD_EDGE",
+      "dimensionId": "SURFACE_QUALITY",
+      "name": "硬边合理性",
+      "description": "判断硬边是否与真实结构转折一致，是否出现无意义断裂。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "hardEdgeCount",
+        "unsupportedHardEdgeCount",
+        "missingHardEdgeCount"
+      ],
+      "scoreCriteria": {
+        "0": "表面分区完全错误。",
+        "1": "硬边策略造成明显表面问题。",
+        "2": "多个硬边设置错误。",
+        "3": "主要硬边设置合理。",
+        "4": "少量边界可优化。",
+        "5": "硬边设置与结构高度一致。"
+      },
+      "suggestions": [
+        "根据真实夹角和材质结构设置硬边。",
+        "删除平滑曲面上的无意义硬边。",
+        "为锐利转折补充正确边界。"
+      ]
+    },
+    {
+      "id": "SQ_TRIANGULATION",
+      "dimensionId": "SURFACE_QUALITY",
+      "name": "三角化稳定性",
+      "description": "比较模型在三角化前后的轮廓、法线和表面着色变化。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "triangulationDeviation",
+        "unstableNgonCount",
+        "shadingChangeAfterTriangulation"
+      ],
+      "scoreCriteria": {
+        "0": "模型无法稳定三角化。",
+        "1": "三角化造成严重表面错误。",
+        "2": "多个区域三角化后明显变化。",
+        "3": "部分N-gon或四边面需要固定对角线。",
+        "4": "存在极少量轻微变化。",
+        "5": "三角化前后表现稳定。"
+      },
+      "suggestions": [
+        "手动控制关键区域三角化方向。",
+        "拆分不稳定N-gon。",
+        "避免扭曲严重的非平面四边面。"
+      ]
+    },
+    {
+      "id": "SQ_FOLDING",
+      "dimensionId": "SURFACE_QUALITY",
+      "name": "表面折叠",
+      "description": "检测面片反折、局部穿越、极端二面角和非预期表面折痕。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "CRITICAL",
+      "metrics": [
+        "foldedFaceCount",
+        "extremeDihedralEdgeCount"
+      ],
+      "scoreCriteria": {
+        "0": "表面结构无法使用。",
+        "1": "大面积折叠和夹面。",
+        "2": "多个区域表面反折。",
+        "3": "局部存在可修复折叠。",
+        "4": "仅有极少量低风险折面。",
+        "5": "无非预期表面折叠。"
+      },
+      "suggestions": [
+        "修复反折面。",
+        "重新排列局部顶点。",
+        "检查投射和自动收缩结果。"
+      ]
+    },
+    {
+      "id": "ED_READABILITY",
+      "dimensionId": "EDITABILITY",
+      "name": "结构可读性",
+      "description": "判断专业人员能否快速理解模型分区、边流和修改路径。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "topologyReadabilityScore"
+      ],
+      "scoreCriteria": {
+        "0": "结构完全不可读。",
+        "1": "拓扑严重阻碍修改。",
+        "2": "多个区域难以理解。",
+        "3": "基本可读但需要整理。",
+        "4": "少量区域较复杂。",
+        "5": "结构清晰、功能明确。"
+      },
+      "suggestions": [
+        "简化无功能连接。",
+        "保持结构分区清晰。",
+        "统一相似部件的拓扑逻辑。"
+      ]
+    },
+    {
+      "id": "ED_COMPONENTS",
+      "dimensionId": "EDITABILITY",
+      "name": "组件组织",
+      "description": "判断模型部件拆分、独立壳体和对象层级是否合理。",
+      "evaluationType": "HYBRID",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "componentCount",
+        "tinyComponentCount",
+        "componentOrganizationScore"
+      ],
+      "scoreCriteria": {
+        "0": "无法识别有效组件关系。",
+        "1": "部件结构严重混乱。",
+        "2": "组件碎片化或错误合并明显。",
+        "3": "基本可用但组织一般。",
+        "4": "少量部件可进一步合并或拆分。",
+        "5": "组件拆分合理且清晰。"
+      },
+      "suggestions": [
+        "合并无意义碎片组件。",
+        "分离需要独立编辑的部件。",
+        "保持对象层级与视觉结构一致。"
+      ]
+    },
+    {
+      "id": "ED_CONTINUITY",
+      "dimensionId": "EDITABILITY",
+      "name": "拓扑连续性",
+      "description": "检测主体表面是否存在无意义断裂、未焊接边界和错误分离。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MAJOR",
+      "metrics": [
+        "unweldedSeamCount",
+        "unexpectedComponentBoundaryCount"
+      ],
+      "scoreCriteria": {
+        "0": "无法形成连续结构。",
+        "1": "主体严重碎裂。",
+        "2": "多个区域无意义分离。",
+        "3": "存在可快速焊接的断裂。",
+        "4": "少量非关键接缝。",
+        "5": "主体拓扑连续。"
+      },
+      "suggestions": [
+        "焊接非设计性接缝。",
+        "检查镜像中线。",
+        "保留确有生产需求的独立边界。"
+      ]
+    },
+    {
+      "id": "ED_SYMMETRY",
+      "dimensionId": "EDITABILITY",
+      "name": "对称一致性",
+      "description": "对于声明为对称的模型，检测两侧形体、拓扑数量和边流是否异常不一致。",
+      "evaluationType": "AUTOMATIC",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "symmetryDeviation",
+        "topologySymmetryRatio"
+      ],
+      "scoreCriteria": {
+        "0": "对称结构无法对应。",
+        "1": "对称拓扑严重失配。",
+        "2": "多个对称区域结构不一致。",
+        "3": "局部存在轻微非预期差异。",
+        "4": "存在少量设计性差异。",
+        "5": "对称区域高度一致。"
+      },
+      "suggestions": [
+        "确认不对称是否属于设计需求。",
+        "修复镜像中线。",
+        "统一两侧关键环线和密度。"
+      ]
+    },
+    {
+      "id": "ED_MODIFIABILITY",
+      "dimensionId": "EDITABILITY",
+      "name": "修改友好度",
+      "description": "判断模型是否便于增删环线、调整轮廓、拆分组件和进行后续加工。",
+      "evaluationType": "AI_VISUAL",
+      "applicableModes": [
+        "LOW_POLY_ONLY",
+        "REFERENCE_COMPARISON"
+      ],
+      "defaultSeverity": "MINOR",
+      "metrics": [
+        "modifiabilityScore"
+      ],
+      "scoreCriteria": {
+        "0": "模型不具备实际可编辑性。",
+        "1": "拓扑严重限制后续编辑。",
+        "2": "多个区域修改容易破坏结构。",
+        "3": "基本可编辑。",
+        "4": "少量区域修改成本较高。",
+        "5": "局部和整体修改均较容易。"
+      },
+      "suggestions": [
+        "减少随机三角区域。",
+        "保持关键边带连续。",
+        "避免在结构中心堆积极点。"
+      ]
+    }
+  ]
+}

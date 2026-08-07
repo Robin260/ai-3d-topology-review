@@ -1,0 +1,35 @@
+{
+  "name": "ai3d-topology-review-web-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "test:comparison": "node scripts/verifyComparison.mjs",
+    "test:specialized": "node scripts/verifySpecializedRubric.mjs",
+    "test:analytics": "node scripts/verifyAnalyticsComparison.mjs",
+    "test:auto-evaluation": "node scripts/verifyAutomaticEvaluation.mjs",
+    "test:universal-workflow": "node scripts/verifyUniversalWorkflow.mjs",
+    "test:complete-flow": "node scripts/verifyCompleteEvaluationFlow.mjs",
+    "test:model-cases": "node scripts/verifyModelTestCases.mjs",
+    "check": "npm run lint && npm run test:model-cases && npm run test:auto-evaluation && npm run test:universal-workflow && npm run test:specialized && npm run test:complete-flow && npm run test:comparison && npm run test:analytics && npm run build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^9.7.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
+    "recharts": "^3.10.1",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "oxlint": "^1.75.0",
+    "vite": "^8.2.0"
+  }
+}

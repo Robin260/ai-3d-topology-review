@@ -1,0 +1,80 @@
+const dimensionScoresA = {
+  MESH_HEALTH: { score: 17.8, maximum: 20, coverage: 1 },
+  SHAPE_FIDELITY: { score: 16.5, maximum: 20, coverage: 1 },
+  EDGE_FLOW: { score: 15.4, maximum: 18, coverage: 1 },
+  LOOP_STRUCTURE: { score: 10.4, maximum: 12, coverage: 1 },
+  DENSITY_EFFICIENCY: { score: 14.2, maximum: 18, coverage: 1 },
+  SURFACE_QUALITY: { score: 6.1, maximum: 7, coverage: 1 },
+  EDITABILITY: { score: 4.5, maximum: 5, coverage: 0.9 },
+}
+
+const dimensionScoresB = {
+  MESH_HEALTH: { score: 17.3, maximum: 20, coverage: 1 },
+  SHAPE_FIDELITY: { score: 18.7, maximum: 20, coverage: 1 },
+  EDGE_FLOW: { score: 14.0, maximum: 18, coverage: 1 },
+  LOOP_STRUCTURE: { score: 9.5, maximum: 12, coverage: 1 },
+  DENSITY_EFFICIENCY: { score: 17.4, maximum: 18, coverage: 1 },
+  SURFACE_QUALITY: { score: 6.7, maximum: 7, coverage: 1 },
+  EDITABILITY: { score: 4.8, maximum: 5, coverage: 0.9 },
+}
+
+export const comparisonMockInput = Object.freeze({
+  comparisonId: 'PK_DEMO_20260807_001',
+  referenceModelId: 'HIGH_CHARACTER_REFERENCE_001',
+  productionTarget: '实时游戏角色 · 绑定与动画前',
+  standardProfileId: 'REALTIME_CHARACTER_ANIMATION_V1',
+  evaluationVersion: 'UNIVERSAL_RETOPO_V1',
+  fairnessContext: {
+    sameSource: true,
+    sameScale: true,
+    samePose: true,
+    sameOrientation: true,
+    sameParts: true,
+    sameStandardProfile: true,
+    sameReferenceAlignment: true,
+    sameTriangleBudget: true,
+    sameMaterialScope: false,
+    sameEvaluationVersion: true,
+  },
+  modelA: {
+    evaluationId: 'EVAL_MODEL_A_DEMO',
+    model: { modelId: 'MODEL_A', name: 'TopoGen A · Character', fileFormat: 'GLB' },
+    overallScore: 84.9,
+    grade: 'A',
+    evaluatedCoverage: 0.95,
+    productionReadyBase: 'PASS',
+    meshStatistics: { vertexCount: 16820, triangleCount: 31800 },
+    dimensionScores: dimensionScoresA,
+    issues: [
+      { issueId: 'A_ISSUE_01', severity: 'MINOR', region: '耳后', summary: '局部长薄面需要整理。' },
+      { issueId: 'A_ISSUE_02', severity: 'MINOR', region: '腰侧', summary: '面密度过渡可以继续平滑。' },
+    ],
+  },
+  modelB: {
+    evaluationId: 'EVAL_MODEL_B_DEMO',
+    model: { modelId: 'MODEL_B', name: 'TopoGen B · Character', fileFormat: 'GLB' },
+    overallScore: 88.4,
+    grade: 'A',
+    evaluatedCoverage: 0.93,
+    productionReadyBase: 'CONDITIONAL_PASS',
+    meshStatistics: { vertexCount: 14260, triangleCount: 26400 },
+    dimensionScores: dimensionScoresB,
+    issues: [
+      { issueId: 'B_ISSUE_01', severity: 'CRITICAL', region: '左肩', summary: '高变形区域存在非流形连接。' },
+      { issueId: 'B_ISSUE_02', severity: 'MAJOR', region: '手肘', summary: '关节环线支撑不足。' },
+    ],
+  },
+  blockersA: [],
+  blockersB: [
+    {
+      id: 'BLOCKER_B_001',
+      ruleId: 'MH_NON_MANIFOLD',
+      severity: 'CRITICAL',
+      region: '左肩',
+      title: '高变形区域存在非流形连接',
+      releaseCondition: '修复左肩非流形连接并重新执行网格健康检查。',
+    },
+  ],
+  missingEvidence: ['骨骼变形测试', '完整 UV 与烘焙数据'],
+  metadata: { source: 'mock', label: 'PK 页面结构演示数据' },
+})

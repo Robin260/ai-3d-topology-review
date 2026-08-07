@@ -1,0 +1,333 @@
+{
+  "schemaVersion": "1.0.0",
+  "evaluationId": "EVAL_20260807_0001",
+  "rubricId": "UNIVERSAL_RETOPO_V1",
+  "rubricVersion": "1.0.0",
+  "model": {
+    "modelId": "MODEL_AI_CHARACTER_001",
+    "name": "AI Generated Character Low Poly",
+    "sourceType": "AI_GENERATED",
+    "fileFormat": "GLB",
+    "evaluationMode": "REFERENCE_COMPARISON",
+    "hasReferenceModel": true,
+    "declaredSymmetry": true,
+    "openBoundaryPolicy": "ALLOW_DECLARED_ONLY"
+  },
+  "meshStatistics": {
+    "objectCount": 4,
+    "vertexCount": 12482,
+    "edgeCount": 24796,
+    "polygonCount": 12316,
+    "triangleCount": 24620,
+    "quadRatio": 0.91,
+    "triangleFaceRatio": 0.07,
+    "ngonRatio": 0.02,
+    "boundaryLoopCount": 5,
+    "nonManifoldEdgeCount": 0,
+    "duplicateFaceCount": 0,
+    "zeroAreaFaceCount": 3,
+    "flippedFaceCount": 0,
+    "selfIntersectionCount": 2,
+    "isolatedComponentCount": 1
+  },
+  "overallScore": 78.2,
+  "grade": "B",
+  "productionReadyBase": "CONDITIONAL_PASS",
+  "evaluatedCoverage": 0.96,
+  "confidence": "MEDIUM_HIGH",
+  "dimensionScores": {
+    "MESH_HEALTH": {
+      "score": 17.1,
+      "maximum": 20,
+      "coverage": 1
+    },
+    "SHAPE_FIDELITY": {
+      "score": 15.3,
+      "maximum": 20,
+      "coverage": 1
+    },
+    "EDGE_FLOW": {
+      "score": 12.2,
+      "maximum": 18,
+      "coverage": 1
+    },
+    "LOOP_STRUCTURE": {
+      "score": 8.4,
+      "maximum": 12,
+      "coverage": 1
+    },
+    "DENSITY_EFFICIENCY": {
+      "score": 14.1,
+      "maximum": 18,
+      "coverage": 1
+    },
+    "SURFACE_QUALITY": {
+      "score": 6.1,
+      "maximum": 7,
+      "coverage": 1
+    },
+    "EDITABILITY": {
+      "score": 5,
+      "maximum": 5,
+      "coverage": 0.8
+    }
+  },
+  "ruleResults": [
+    {
+      "ruleId": "MH_NON_MANIFOLD",
+      "status": "PASS",
+      "rawScore": 5,
+      "normalizedScore": 1,
+      "confidence": "HIGH",
+      "evidence": {
+        "nonManifoldEdgeCount": 0,
+        "nonManifoldVertexCount": 0
+      }
+    },
+    {
+      "ruleId": "MH_ZERO_AREA",
+      "status": "WARNING",
+      "rawScore": 4,
+      "normalizedScore": 0.8,
+      "confidence": "HIGH",
+      "evidence": {
+        "zeroAreaFaceCount": 3,
+        "locations": [
+          "Left Wrist",
+          "Left Wrist",
+          "Back Collar"
+        ]
+      }
+    },
+    {
+      "ruleId": "SF_SILHOUETTE",
+      "status": "WARNING",
+      "rawScore": 4,
+      "normalizedScore": 0.8,
+      "confidence": "MEDIUM_HIGH",
+      "evidence": {
+        "silhouetteIoU": 0.936,
+        "silhouetteDistanceMean": 0.008,
+        "worstView": "LEFT_SIDE"
+      }
+    },
+    {
+      "ruleId": "EF_POLE_PLACEMENT",
+      "status": "FAIL",
+      "rawScore": 2,
+      "normalizedScore": 0.4,
+      "confidence": "MEDIUM",
+      "evidence": {
+        "highRiskPoleCount": 7,
+        "highRiskLocations": [
+          "Left Shoulder",
+          "Right Shoulder",
+          "Left Cheek",
+          "Right Cheek"
+        ]
+      }
+    },
+    {
+      "ruleId": "DE_OVER_DENSITY",
+      "status": "WARNING",
+      "rawScore": 3,
+      "normalizedScore": 0.6,
+      "confidence": "HIGH",
+      "evidence": {
+        "overDenseAreaRatio": 0.083,
+        "redundantTriangleEstimate": 1140,
+        "mainLocations": [
+          "Lower Back",
+          "Inner Torso"
+        ]
+      }
+    }
+  ],
+  "issues": [
+    {
+      "issueId": "ISSUE_001",
+      "ruleId": "EF_POLE_PLACEMENT",
+      "dimensionId": "EDGE_FLOW",
+      "location": {
+        "object": "Body",
+        "region": "Left Shoulder",
+        "vertexIds": [
+          3812,
+          3813,
+          3820,
+          3841
+        ],
+        "normalizedPosition": [
+          0.31,
+          0.72,
+          0.08
+        ]
+      },
+      "severity": "MAJOR",
+      "confidence": "MEDIUM_HIGH",
+      "evidence": "一个六价极点位于肩部主要曲率变化区域，并与三条短边相连。",
+      "consequence": "可能产生局部夹痕，并降低后续肩部结构修改和动画适配能力。",
+      "suggestion": "将环线汇聚点移动到锁骨后侧较平坦区域，并重新连接肩部环线。",
+      "scoreDeduction": 2.1,
+      "heatmapValue": 0.82
+    },
+    {
+      "issueId": "ISSUE_002",
+      "ruleId": "DE_OVER_DENSITY",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "location": {
+        "object": "Body",
+        "region": "Lower Back",
+        "faceIds": [
+          5210,
+          5211,
+          5212,
+          5213,
+          5214
+        ],
+        "normalizedPosition": [
+          0.5,
+          0.49,
+          -0.11
+        ]
+      },
+      "severity": "MAJOR",
+      "confidence": "HIGH",
+      "evidence": "低曲率背部区域的单位面积三角面密度约为相邻腰侧轮廓区域的1.8倍。",
+      "consequence": "面数被分配到低价值平坦区域，未有效提高轮廓或曲率质量。",
+      "suggestion": "删除背部交替环线，并将部分几何预算转移到腰侧外轮廓。",
+      "scoreDeduction": 1.8,
+      "heatmapValue": 0.71
+    },
+    {
+      "issueId": "ISSUE_003",
+      "ruleId": "DE_UNDER_DENSITY",
+      "dimensionId": "DENSITY_EFFICIENCY",
+      "location": {
+        "object": "Hair",
+        "region": "Left Hair Silhouette",
+        "faceIds": [
+          712,
+          713,
+          714
+        ],
+        "normalizedPosition": [
+          0.27,
+          0.88,
+          0.03
+        ]
+      },
+      "severity": "MAJOR",
+      "confidence": "MEDIUM_HIGH",
+      "evidence": "侧面轮廓在三个连续面片处形成明显折线，与参考高模偏差较大。",
+      "consequence": "降低头发外轮廓的平滑度和角色识别质量。",
+      "suggestion": "在轮廓最大曲率点增加两个顶点，并减少内部平面区域的冗余边。",
+      "scoreDeduction": 1.5,
+      "heatmapValue": 0.76
+    },
+    {
+      "issueId": "ISSUE_004",
+      "ruleId": "MH_ZERO_AREA",
+      "dimensionId": "MESH_HEALTH",
+      "location": {
+        "object": "Body",
+        "region": "Left Wrist",
+        "faceIds": [
+          9218,
+          9219
+        ],
+        "normalizedPosition": [
+          0.18,
+          0.43,
+          0.02
+        ]
+      },
+      "severity": "MINOR",
+      "confidence": "HIGH",
+      "evidence": "检测到两个面积低于几何容差的退化面。",
+      "consequence": "可能在导出、三角化或法线计算时产生不稳定结果。",
+      "suggestion": "合并重合顶点并重新构建腕部局部面片。",
+      "scoreDeduction": 0.4,
+      "heatmapValue": 0.38
+    },
+    {
+      "issueId": "ISSUE_005",
+      "ruleId": "SF_SECONDARY_FORM",
+      "dimensionId": "SHAPE_FIDELITY",
+      "location": {
+        "object": "Clothing",
+        "region": "Collar Fold",
+        "normalizedPosition": [
+          0.5,
+          0.78,
+          0.13
+        ]
+      },
+      "severity": "MINOR",
+      "confidence": "MEDIUM",
+      "evidence": "参考模型中的衣领主要转折被平均化，折叠层次变弱。",
+      "consequence": "不会阻止使用，但降低服装结构可读性。",
+      "suggestion": "保留衣领外轮廓和主要折线，次级微小褶皱可交由法线贴图表达。",
+      "scoreDeduction": 0.6,
+      "heatmapValue": 0.43
+    }
+  ],
+  "summary": {
+    "overallAssessment": "该模型具备基本可用的低模结构，网格健康和主轮廓保留表现良好，但肩部极点、局部密度分配以及头发轮廓仍需要优化。",
+    "strengths": [
+      "未检测到非流形结构和大面积法线翻转。",
+      "整体体积与主要轮廓得到较好保留。",
+      "大部分曲面区域的法线和三角化表现稳定。",
+      "主要对象组件组织清晰。"
+    ],
+    "weaknesses": [
+      "肩部和面颊附近存在高风险极点。",
+      "背部平坦区域面密度偏高。",
+      "头发侧面轮廓局部过疏。",
+      "少量衣物次级结构被过度平均化。"
+    ],
+    "priorityActions": [
+      {
+        "priority": 1,
+        "action": "重新调整肩部环线和极点位置。",
+        "relatedRuleIds": [
+          "EF_POLE_PLACEMENT",
+          "EF_CURVATURE"
+        ]
+      },
+      {
+        "priority": 2,
+        "action": "重新平衡背部与腰侧的面密度。",
+        "relatedRuleIds": [
+          "DE_OVER_DENSITY",
+          "DE_LOCAL_DENSITY"
+        ]
+      },
+      {
+        "priority": 3,
+        "action": "增加头发关键外轮廓的几何支撑。",
+        "relatedRuleIds": [
+          "DE_UNDER_DENSITY",
+          "LS_SILHOUETTE_LOOP"
+        ]
+      },
+      {
+        "priority": 4,
+        "action": "清理腕部零面积面并重新验证三角化。",
+        "relatedRuleIds": [
+          "MH_ZERO_AREA",
+          "SQ_TRIANGULATION"
+        ]
+      }
+    ],
+    "nextEvaluation": {
+      "recommended": true,
+      "reason": "完成局部修复后，应重新运行通用评测并进入具体生产目标专项评测。",
+      "recommendedTargetRuleSets": [
+        "REALTIME_CHARACTER_RULESET",
+        "ANIMATION_CHARACTER_RULESET"
+      ]
+    }
+  },
+  "generatedAt": "2026-08-07T03:15:00+08:00"
+}

@@ -1,0 +1,30 @@
+.universal-completion-panel { display: grid; gap: 15px; padding: 22px; border: 1px solid #d8e5f7; border-radius: var(--radius-xl); background: linear-gradient(145deg, #fbfdff, #f3f7fd); box-shadow: var(--shadow-card); }
+.universal-completion-panel.is-complete { border-color: rgba(22,136,91,.24); background: linear-gradient(145deg, #fbfffd, #f2fbf6); }
+.universal-completion-panel__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.universal-completion-panel__heading h2 { margin: 7px 0 5px; color: var(--color-text-primary); font-size: 20px; }
+.universal-completion-panel__heading p { max-width: 690px; margin: 0; color: var(--color-text-secondary); font-size: 10px; line-height: 1.6; }
+.universal-completion-panel__score { min-width: 128px; display: grid; justify-items: end; }
+.universal-completion-panel__score span { color: var(--color-text-tertiary); font-size: 9px; }
+.universal-completion-panel__score strong { margin-top: 2px; color: var(--color-primary); font-size: 32px; letter-spacing: -.04em; }
+.universal-completion-panel.is-complete .universal-completion-panel__score strong { color: var(--color-success); }
+.universal-completion-panel__score small { color: var(--color-text-secondary); font-size: 9px; }
+.universal-completion-progress { height: 7px; overflow: hidden; border-radius: 999px; background: #dfe7f2; }
+.universal-completion-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2f72ff, #43a1ff); transition: width .25s ease; }
+.universal-completion-panel.is-complete .universal-completion-progress i { background: linear-gradient(90deg, #16885b, #3bbf83); }
+.universal-completion-metrics { display: grid; grid-template-columns: repeat(4, 1fr); overflow: hidden; border: 1px solid var(--color-border-soft); border-radius: 12px; background: rgba(255,255,255,.72); }
+.universal-completion-metrics > div { padding: 11px 12px; border-left: 1px solid var(--color-border-soft); }
+.universal-completion-metrics > div:first-child { border-left: 0; }
+.universal-completion-metrics span { display: block; color: var(--color-text-tertiary); font-size: 8px; }
+.universal-completion-metrics strong { display: block; margin-top: 4px; color: var(--color-text-primary); font-size: 15px; }
+.universal-completion-actions { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.universal-completion-actions > div { display: grid; gap: 5px; }
+.universal-completion-actions small { max-width: 340px; color: var(--color-text-tertiary); font-size: 8px; line-height: 1.45; }
+
+@media (max-width: 720px) {
+  .universal-completion-panel__heading, .universal-completion-actions { align-items: stretch; flex-direction: column; }
+  .universal-completion-panel__score { justify-items: start; }
+  .universal-completion-metrics { grid-template-columns: repeat(2, 1fr); }
+  .universal-completion-metrics > div:nth-child(3) { border-top: 1px solid var(--color-border-soft); border-left: 0; }
+  .universal-completion-metrics > div:nth-child(4) { border-top: 1px solid var(--color-border-soft); }
+}
+
