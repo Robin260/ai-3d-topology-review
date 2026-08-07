@@ -77,6 +77,24 @@
 
 ## 五、部署到公网
 
+当前项目采用双入口：
+
+- 中国大陆测试入口：`https://ai3d-d5g26vr60d8736090-1464860993.tcloudbaseapp.com`
+- 国际备用入口：`https://ai-3d-topology-review.vercel.app`
+
+国内入口部署在腾讯云 CloudBase 免费体验环境 `ai3d-d5g26vr60d8736090`。默认域名适合开发与演示测试，不需要自有域名备案；正式长期运营时仍建议准备已备案的自定义域名。
+
+### 腾讯云 CloudBase 更新方法
+
+1. 在项目目录运行 `npm run check`，确认所有检查和正式构建通过。
+2. 将 `dist/index.html` 复制为 `dist/home/index.html`、`dist/evaluate/index.html`、`dist/pk/index.html` 和 `dist/statistics/index.html`，保证直接打开或刷新这些页面不会出现 404。
+3. 使用 CloudBase CLI 将 `dist` 上传到环境 `ai3d-d5g26vr60d8736090`。
+4. 等待 CDN 刷新后，检查首页、评测、PK 和统计页面。
+
+免费体验环境当前有效期为 6 个月，不开启自动按量超额计费。到期前应登录腾讯云检查并续期；不要在不了解费用的情况下升级付费套餐或开启按量计费。
+
+### Vercel 国际备用入口
+
 推荐使用 Vercel。Vite 项目连接 GitHub 后可以自动构建，以后每次更新 `main` 分支都会重新部署。
 
 当前项目已经通过 Vercel CLI 完成首次生产部署，公开地址为：
@@ -102,7 +120,7 @@ https://ai-3d-topology-review.vercel.app
 
 ### “任意网络访问”的实际含义
 
-部署成功后，不需要和开发电脑处在同一局域网，任何能够正常访问 Vercel 的电脑或手机都可以打开网站。但是公司防火墙、地区网络策略或 Vercel 自身服务状态仍可能限制访问，因此无法承诺字面意义上的所有网络都可访问。
+部署成功后，不需要和开发电脑处在同一局域网。中国大陆用户优先使用腾讯云入口，其他地区可以使用 Vercel 入口。双入口能明显提高可访问性，但公司防火墙、地区网络策略、运营商故障或平台服务状态仍可能造成限制，因此无法承诺字面意义上的所有网络都始终可访问。
 
 ## 六、发布后的验收
 
@@ -123,8 +141,9 @@ https://ai-3d-topology-review.vercel.app
 1. 在 GitHub Desktop 填写本次修改说明；
 2. 点击 `Commit to main`；
 3. 点击 `Push origin`；
-4. 等待 Vercel 自动部署；
-5. 打开线上地址检查主要页面。
+4. 目前 Vercel 与 GitHub 尚未自动连接，需要由 Codex 或 Vercel CLI 重新发布国际入口；
+5. 按上面的 CloudBase 更新方法重新发布国内入口；
+6. 打开两个线上地址检查主要页面。
 
 如果线上版本出现问题，可在 Vercel 的 Deployments 页面找到上一个成功版本进行回退。
 
@@ -135,3 +154,5 @@ https://ai-3d-topology-review.vercel.app
 - [Vite：静态站点部署](https://vite.dev/guide/static-deploy.html)
 - [Vercel：Vite 项目与 SPA 路由](https://vercel.com/docs/frameworks/frontend/vite)
 - [Vercel：连接 Git 仓库](https://vercel.com/docs/git)
+- [腾讯云 CloudBase：静态网站托管](https://cloud.tencent.com/document/product/876/46900)
+- [腾讯云 CloudBase：价格文档](https://cloud.tencent.com/document/product/876/75213)

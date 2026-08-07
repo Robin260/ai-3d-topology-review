@@ -517,11 +517,12 @@ npm run test:specialized
 - UV、烘焙和动画变形专项检测；
 - 真实项目数据和服务端存储；
 - PDF 报告生成；
-- 在线部署与更多真实模型验证。
+- 更多真实模型与不同网络环境验证。
 
 ## 项目地址
 
-- 在线体验：[https://ai-3d-topology-review.vercel.app](https://ai-3d-topology-review.vercel.app)
+- 中国大陆测试入口：[https://ai3d-d5g26vr60d8736090-1464860993.tcloudbaseapp.com](https://ai3d-d5g26vr60d8736090-1464860993.tcloudbaseapp.com)
+- 国际备用入口：[https://ai-3d-topology-review.vercel.app](https://ai-3d-topology-review.vercel.app)
 - GitHub：[https://github.com/Robin260/ai-3d-topology-review](https://github.com/Robin260/ai-3d-topology-review)
 
 ## 总结
