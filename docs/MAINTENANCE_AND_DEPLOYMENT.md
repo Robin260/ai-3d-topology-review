@@ -79,6 +79,14 @@
 
 推荐使用 Vercel。Vite 项目连接 GitHub 后可以自动构建，以后每次更新 `main` 分支都会重新部署。
 
+当前项目已经通过 Vercel CLI 完成首次生产部署，公开地址为：
+
+```text
+https://ai-3d-topology-review.vercel.app
+```
+
+当前 Vercel 账号尚未向 GitHub App 授予此仓库的连接权限，因此现阶段推送 GitHub 不会自动触发部署。需要更新线上版本时，可以让 Codex 在项目目录重新执行生产部署；以后在 Vercel 中完成 GitHub App 授权后，才会自动随 `main` 分支更新。
+
 ### Vercel 操作
 
 1. 打开 [Vercel](https://vercel.com/) 并使用 GitHub 登录。
