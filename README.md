@@ -521,7 +521,7 @@ npm run test:specialized
 
 ## 项目地址
 
-- 在线体验：`待补充`
+- 在线体验：[https://ai-3d-topology-review.vercel.app](https://ai-3d-topology-review.vercel.app)
 - GitHub：[https://github.com/Robin260/ai-3d-topology-review](https://github.com/Robin260/ai-3d-topology-review)
 
 ## 总结
