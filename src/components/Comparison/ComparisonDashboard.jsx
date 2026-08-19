@@ -11,7 +11,7 @@ function ModelResultHeader({ side, model, delivery }) {
   return (
     <div className="pk-model-header">
       <div><span>模型 {side}</span><strong>{model.model.name}</strong></div>
-      <div className={`pk-delivery-badge is-${tone}`}><span>{model.overallScore.toFixed(1)}</span><small>{comparisonLabels.delivery[delivery]}</small></div>
+      <div className={`pk-delivery-badge is-${tone}`}><span>{Number(model.overallScore).toFixed(1)}</span><small>{comparisonLabels.delivery[delivery]}</small></div>
     </div>
   )
 }
@@ -26,12 +26,23 @@ function WinnerCard({ label, winner, note }) {
   )
 }
 
+function blockerDescription(blockers) {
+  if (!blockers.length) return '当前记录没有硬性门槛阻断问题。'
+  if (blockers.length === 1) return blockers[0].title
+  return `存在 ${blockers.length} 项阻断问题，首要问题：${blockers[0].title}`
+}
+
 function ComparisonDashboard({ record }) {
   const [viewerMode, setViewerMode] = useState('solid')
   const [activeRole, setActiveRole] = useState(record.roleFeedback[0]?.id)
   const activeFeedback = record.roleFeedback.find((item) => item.id === activeRole)
   const fairnessTone = record.fairness.status === 'valid' ? 'success' : record.fairness.status === 'invalid' ? 'error' : 'warning'
   const confidenceTone = record.confidence.level === 'high' ? 'success' : record.confidence.level === 'medium' ? 'warning' : 'error'
+  const isMock = record.metadata.source === 'mock'
+
+  const renderViewer = (model) => model.model.previewSource || isMock
+    ? <ModelViewer source={model.model.previewSource} format={model.model.fileFormat} modelName={model.model.name} mode={viewerMode} onModeChange={setViewerMode} />
+    : <div className="pk-preview-unavailable"><strong>评测结果可比较</strong><p>本地上传文件不会被保存在浏览器中，因此此处无法恢复三维模型。重新上传模型后可再次预览，但不会影响本次分数 PK。</p></div>
 
   return (
     <div className="pk-dashboard">
@@ -51,11 +62,11 @@ function ComparisonDashboard({ record }) {
         <div className="pk-viewer-grid">
           <div className="pk-model-view">
             <ModelResultHeader side="A" model={record.modelA} delivery={record.delivery.A} />
-            <ModelViewer modelName={record.modelA.model.name} mode={viewerMode} onModeChange={setViewerMode} />
+            {renderViewer(record.modelA)}
           </div>
           <div className="pk-model-view">
             <ModelResultHeader side="B" model={record.modelB} delivery={record.delivery.B} />
-            <ModelViewer modelName={record.modelB.model.name} mode={viewerMode} onModeChange={setViewerMode} />
+            {renderViewer(record.modelB)}
           </div>
         </div>
       </section>
@@ -65,7 +76,7 @@ function ComparisonDashboard({ record }) {
           <span className="section-kicker">CURRENT RECOMMENDATION</span>
           <h2>当前推荐：{winnerName(record.winners.deliveryRecommendation)}</h2>
           <p>{record.recommendation.rationale}</p>
-          <div className="pk-verdict-tags"><span>质量与交付分开</span><span>阻断问题优先</span><span>Mock 演示结论</span></div>
+          <div className="pk-verdict-tags"><span>质量与交付分开</span><span>阻断问题优先</span><span>{isMock ? '演示结论' : '历史结果比较'}</span></div>
         </div>
         <div className="pk-winner-grid">
           <WinnerCard label="综合推荐" winner={record.winners.overallWinner} note="结合风险与当前目标" />
@@ -97,16 +108,22 @@ function ComparisonDashboard({ record }) {
         <div className="pk-risk-panel">
           <div className="pk-section-heading"><div><span className="section-kicker">BLOCKING GATES</span><h2>阻断与交付</h2></div></div>
           <div className="pk-blocker-grid">
-            <StatusCard tone="success" label="模型 A" title={comparisonLabels.delivery[record.delivery.A]} description="当前没有阻断问题；仍需处理普通警告项。" />
+            <StatusCard
+              tone={record.blockingIssues.A.length ? 'error' : 'success'}
+              label="模型 A"
+              title={comparisonLabels.delivery[record.delivery.A]}
+              description={blockerDescription(record.blockingIssues.A)}
+              meta={record.blockingIssues.A[0]?.region}
+            />
             <StatusCard
               tone={record.blockingIssues.B.length ? 'error' : 'success'}
               label="模型 B"
               title={comparisonLabels.delivery[record.delivery.B]}
-              description={record.blockingIssues.B[0]?.title || '当前没有阻断问题。'}
+              description={blockerDescription(record.blockingIssues.B)}
               meta={record.blockingIssues.B[0]?.region}
             />
           </div>
-          {record.blockingIssues.B[0] && <p className="pk-release-condition"><strong>解除条件：</strong>{record.blockingIssues.B[0].releaseCondition}</p>}
+          {(record.blockingIssues.A[0] || record.blockingIssues.B[0]) && <p className="pk-release-condition"><strong>解除条件：</strong>{record.blockingIssues.A[0]?.releaseCondition || record.blockingIssues.B[0]?.releaseCondition}</p>}
         </div>
 
         <div className="pk-role-panel">
@@ -122,10 +139,11 @@ function ComparisonDashboard({ record }) {
 
       <section className="boundary-note">
         <span className="boundary-icon">i</span>
-        <div><strong>当前 PK 使用结构化 Mock 数据</strong><p>公平性、差异、置信度和阻断优先逻辑由真实纯函数运行；模型分数、阻断问题和岗位证据是页面演示数据，未来替换为历史单模型评测记录。</p></div>
+        <div><strong>{isMock ? '当前 PK 使用结构化演示数据' : '当前 PK 使用本机历史评测记录'}</strong><p>{isMock ? '公平性、差异、置信度和阻断优先逻辑由真实纯函数运行；模型分数与问题用于展示完整页面结构。' : '分数、维度、阻断问题与交付状态均来自已保存评测；无法从历史记录证明的公平性条件会标为未知并降低置信度，不会伪装成已通过。'}</p></div>
       </section>
     </div>
   )
 }
 
 export default ComparisonDashboard
+
