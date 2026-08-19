@@ -6,15 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:static": "npm run build && node scripts/prepareStaticRoutes.mjs",
     "lint": "oxlint",
     "test:comparison": "node scripts/verifyComparison.mjs",
+    "test:comparison-records": "node scripts/verifyComparisonRecordAdapter.mjs",
     "test:specialized": "node scripts/verifySpecializedRubric.mjs",
     "test:analytics": "node scripts/verifyAnalyticsComparison.mjs",
     "test:auto-evaluation": "node scripts/verifyAutomaticEvaluation.mjs",
     "test:universal-workflow": "node scripts/verifyUniversalWorkflow.mjs",
     "test:complete-flow": "node scripts/verifyCompleteEvaluationFlow.mjs",
     "test:model-cases": "node scripts/verifyModelTestCases.mjs",
-    "check": "npm run lint && npm run test:model-cases && npm run test:auto-evaluation && npm run test:universal-workflow && npm run test:specialized && npm run test:complete-flow && npm run test:comparison && npm run test:analytics && npm run build",
+    "test:live-comparison": "node scripts/verifyLiveGeometryComparison.mjs",
+    "test:street-lamp": "node scripts/verifyStreetLampTestSet.mjs",
+    "check": "npm run lint && npm run test:model-cases && npm run test:street-lamp && npm run test:live-comparison && npm run test:auto-evaluation && npm run test:universal-workflow && npm run test:specialized && npm run test:complete-flow && npm run test:comparison && npm run test:comparison-records && npm run test:analytics && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -20,7 +20,7 @@ function AnalyticsPendingEvaluations({ records }) {
         eyebrow="待完善记录"
         title="当前没有未完成的评测"
         description="保存部分自动评测后，它会出现在这里；正式完成后则进入历史记录和统计分析。"
-        actions={<Button as={Link} to="/evaluate">开始一次模型评测</Button>}
+        actions={<Button as={Link} to="/evaluate/universal">开始一次模型评测</Button>}
       />
     )
   }
@@ -33,7 +33,8 @@ function AnalyticsPendingEvaluations({ records }) {
       </section>
       <div className="analytics-pending-list">
         {records.map((record) => {
-          const result = record.universalResult || {}
+          const isSpecializedOnly = record.evaluationState === 'specialized_complete' && Boolean(record.specializedResult)
+          const result = isSpecializedOnly ? record.specializedResult : record.universalResult || {}
           const model = record.modelA || result.model || {}
           const reference = record.modelReference || {}
           const canRestoreModel = reference.sourceType === 'BUILT_IN' && Boolean(reference.url)
@@ -47,13 +48,13 @@ function AnalyticsPendingEvaluations({ records }) {
                 <small>保存于 {formatDate(record.updatedAt)} · 记录 ID：{record.id.slice(0, 8)}</small>
               </div>
               <div className="pending-metrics">
-                <div><span>已测规则表现</span><strong>{result.partialScore?.toFixed?.(1) ?? '—'}</strong></div>
-                <div><span>覆盖率</span><strong>{Number.isFinite(result.evaluatedCoverage) ? `${Math.round(result.evaluatedCoverage * 100)}%` : '—'}</strong></div>
+                <div><span>{isSpecializedOnly ? '专项质量分' : '已测规则表现'}</span><strong>{(result.overallScore ?? result.partialScore)?.toFixed?.(1) ?? '—'}</strong></div>
+                <div><span>覆盖率</span><strong>{Number.isFinite(result.evaluatedCoverage ?? result.coverage) ? `${Math.round((result.evaluatedCoverage ?? result.coverage) * 100)}%` : isSpecializedOnly ? '100%' : '—'}</strong></div>
                 <div><span>问题</span><strong>{result.issues?.length ?? 0}</strong></div>
               </div>
               <div className="pending-action">
-                <Button as={Link} size="small" to={`/evaluate?resume=${encodeURIComponent(record.id)}`}>
-                  {canRestoreModel ? '恢复模型并继续' : '重新选择文件继续'}
+                <Button as={Link} size="small" to={`/evaluate/${isSpecializedOnly ? 'specialized' : 'universal'}?resume=${encodeURIComponent(record.id)}`}>
+                  {isSpecializedOnly ? '查看专项结果' : canRestoreModel ? '恢复模型并继续' : '重新选择文件继续'}
                 </Button>
                 <small>{canRestoreModel ? '模型 URL 与结构化结果可恢复' : '浏览器不会保存本地模型文件本体'}</small>
               </div>

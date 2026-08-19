@@ -4,6 +4,7 @@ const AREA_EPSILON = 1e-12
 const NORMAL_EPSILON = 1e-10
 const SLIVER_QUALITY_THRESHOLD = 0.025
 const MAX_TOPOLOGY_TRIANGLES_PER_MESH = 300000
+const MAX_ISSUE_REGIONS_PER_TYPE = 200
 
 const readVertex = (position, index, target) => {
   target.set(position.getX(index), position.getY(index), position.getZ(index))
@@ -17,6 +18,7 @@ export function analyzeMeshGeometry(root) {
     triangleCount: 0,
     indexedMeshCount: 0,
     degenerateTriangleCount: 0,
+    nearDegenerateTriangleCount: 0,
     sliverTriangleCount: 0,
     minimumTriangleQuality: 1,
     duplicateFaceCount: 0,
@@ -32,6 +34,15 @@ export function analyzeMeshGeometry(root) {
     missingUvMeshCount: 0,
     materialSlotCount: 0,
     dimensions: { x: 0, y: 0, z: 0 },
+    issueRegions: {
+      nonManifoldEdges: [],
+      boundaryEdges: [],
+      duplicateFaces: [],
+      degenerateFaces: [],
+      nearDegenerateFaces: [],
+      sliverFaces: [],
+      invalidNormals: [],
+    },
   }
 
   if (!root?.traverse) return summary
@@ -41,6 +52,15 @@ export function analyzeMeshGeometry(root) {
   const pointC = new THREE.Vector3()
   const edgeVectorA = new THREE.Vector3()
   const edgeVectorB = new THREE.Vector3()
+  const worldPointA = new THREE.Vector3()
+  const worldPointB = new THREE.Vector3()
+  const worldPointC = new THREE.Vector3()
+
+  const addIssueRegion = (type, region) => {
+    if (summary.issueRegions[type].length < MAX_ISSUE_REGIONS_PER_TYPE) {
+      summary.issueRegions[type].push(region)
+    }
+  }
 
   root.updateMatrixWorld?.(true)
   root.traverse((object) => {
@@ -48,6 +68,7 @@ export function analyzeMeshGeometry(root) {
     const geometry = object.geometry
     const position = geometry.getAttribute('position')
     if (!position) return
+    const objectName = object.name || `Mesh_${summary.meshCount + 1}`
 
     summary.meshCount += 1
     summary.vertexCount += position.count
@@ -71,6 +92,10 @@ export function analyzeMeshGeometry(root) {
       const y = Math.round(position.getY(vertexIndex) / quantizeTolerance)
       const z = Math.round(position.getZ(vertexIndex) / quantizeTolerance)
       return `${x},${y},${z}`
+    })
+    const vertexIndexByKey = new Map()
+    vertexKeys.forEach((key, vertexIndex) => {
+      if (!vertexIndexByKey.has(key)) vertexIndexByKey.set(key, vertexIndex)
     })
     summary.duplicatePositionCount += position.count - new Set(vertexKeys).size
 
@@ -97,21 +122,69 @@ export function analyzeMeshGeometry(root) {
       const maximumEdgeSquared = Math.max(abSquared, bcSquared, caSquared)
       const scaledAreaEpsilon = Math.max(AREA_EPSILON, maximumEdgeSquared * maximumEdgeSquared * 1e-12)
 
-      if (doubleAreaSquared <= scaledAreaEpsilon) {
+      if (doubleAreaSquared === 0) {
         summary.degenerateTriangleCount += 1
         summary.minimumTriangleQuality = 0
+        worldPointA.copy(pointA).applyMatrix4(object.matrixWorld)
+        worldPointB.copy(pointB).applyMatrix4(object.matrixWorld)
+        worldPointC.copy(pointC).applyMatrix4(object.matrixWorld)
+        addIssueRegion('degenerateFaces', {
+          objectName,
+          triangleIndex,
+          vertexIndices: [a, b, c],
+          points: [worldPointA.toArray(), worldPointB.toArray(), worldPointC.toArray()],
+          center: worldPointA.clone().add(worldPointB).add(worldPointC).multiplyScalar(1 / 3).toArray(),
+        })
       } else {
         const doubleArea = Math.sqrt(doubleAreaSquared)
         const quality = 2 * Math.sqrt(3) * doubleArea / Math.max(abSquared + bcSquared + caSquared, Number.EPSILON)
         summary.minimumTriangleQuality = Math.min(summary.minimumTriangleQuality, quality)
-        if (quality < SLIVER_QUALITY_THRESHOLD) summary.sliverTriangleCount += 1
+        if (doubleAreaSquared <= scaledAreaEpsilon) {
+          summary.nearDegenerateTriangleCount += 1
+          worldPointA.copy(pointA).applyMatrix4(object.matrixWorld)
+          worldPointB.copy(pointB).applyMatrix4(object.matrixWorld)
+          worldPointC.copy(pointC).applyMatrix4(object.matrixWorld)
+          addIssueRegion('nearDegenerateFaces', {
+            objectName,
+            triangleIndex,
+            vertexIndices: [a, b, c],
+            points: [worldPointA.toArray(), worldPointB.toArray(), worldPointC.toArray()],
+            center: worldPointA.clone().add(worldPointB).add(worldPointC).multiplyScalar(1 / 3).toArray(),
+            quality,
+          })
+        } else if (quality < SLIVER_QUALITY_THRESHOLD) {
+          summary.sliverTriangleCount += 1
+          worldPointA.copy(pointA).applyMatrix4(object.matrixWorld)
+          worldPointB.copy(pointB).applyMatrix4(object.matrixWorld)
+          worldPointC.copy(pointC).applyMatrix4(object.matrixWorld)
+          addIssueRegion('sliverFaces', {
+            objectName,
+            triangleIndex,
+            vertexIndices: [a, b, c],
+            points: [worldPointA.toArray(), worldPointB.toArray(), worldPointC.toArray()],
+            center: worldPointA.clone().add(worldPointB).add(worldPointC).multiplyScalar(1 / 3).toArray(),
+            quality,
+          })
+        }
       }
 
       if (shouldAnalyzeTopology) {
         const triangleVertices = [vertexKeys[a], vertexKeys[b], vertexKeys[c]]
         const faceKey = [...triangleVertices].sort().join('|')
         const previousFaceUse = faceUseCount.get(faceKey) || 0
-        if (previousFaceUse > 0) summary.duplicateFaceCount += 1
+        if (previousFaceUse > 0) {
+          summary.duplicateFaceCount += 1
+          worldPointA.copy(pointA).applyMatrix4(object.matrixWorld)
+          worldPointB.copy(pointB).applyMatrix4(object.matrixWorld)
+          worldPointC.copy(pointC).applyMatrix4(object.matrixWorld)
+          addIssueRegion('duplicateFaces', {
+            objectName,
+            triangleIndex,
+            vertexIndices: [a, b, c],
+            points: [worldPointA.toArray(), worldPointB.toArray(), worldPointC.toArray()],
+            center: worldPointA.clone().add(worldPointB).add(worldPointC).multiplyScalar(1 / 3).toArray(),
+          })
+        }
         faceUseCount.set(faceKey, previousFaceUse + 1)
 
         const triangleEdges = [
@@ -122,17 +195,36 @@ export function analyzeMeshGeometry(root) {
         triangleEdges.forEach(([start, end]) => {
           if (start === end) return
           const edgeKey = start < end ? `${start}|${end}` : `${end}|${start}`
-          edgeUseCount.set(edgeKey, (edgeUseCount.get(edgeKey) || 0) + 1)
+          const edge = edgeUseCount.get(edgeKey)
+          if (edge) edge.useCount += 1
+          else edgeUseCount.set(edgeKey, { useCount: 1, startKey: start, endKey: end })
         })
       }
     }
 
     if (shouldAnalyzeTopology) {
       const nonManifoldVertices = new Set()
-      edgeUseCount.forEach((useCount, edgeKey) => {
-        if (useCount === 1) summary.boundaryEdgeCount += 1
-        if (useCount <= 2) return
+      edgeUseCount.forEach((edge, edgeKey) => {
+        const startIndex = vertexIndexByKey.get(edge.startKey)
+        const endIndex = vertexIndexByKey.get(edge.endKey)
+        readVertex(position, startIndex, worldPointA).applyMatrix4(object.matrixWorld)
+        readVertex(position, endIndex, worldPointB).applyMatrix4(object.matrixWorld)
+        const region = {
+          objectName,
+          edgeKey,
+          vertexIndices: [startIndex, endIndex],
+          start: worldPointA.toArray(),
+          end: worldPointB.toArray(),
+          center: worldPointA.clone().add(worldPointB).multiplyScalar(0.5).toArray(),
+          useCount: edge.useCount,
+        }
+        if (edge.useCount === 1) {
+          summary.boundaryEdgeCount += 1
+          addIssueRegion('boundaryEdges', region)
+        }
+        if (edge.useCount <= 2) return
         summary.nonManifoldEdgeCount += 1
+        addIssueRegion('nonManifoldEdges', region)
         edgeKey.split('|').forEach((vertexKey) => nonManifoldVertices.add(vertexKey))
       })
       summary.nonManifoldVertexCount += nonManifoldVertices.size
@@ -147,7 +239,17 @@ export function analyzeMeshGeometry(root) {
         const y = normal.getY(normalIndex)
         const z = normal.getZ(normalIndex)
         const lengthSquared = x * x + y * y + z * z
-        if (!Number.isFinite(lengthSquared) || lengthSquared <= NORMAL_EPSILON) summary.invalidNormalCount += 1
+        if (!Number.isFinite(lengthSquared) || lengthSquared <= NORMAL_EPSILON) {
+          summary.invalidNormalCount += 1
+          if (normalIndex < position.count) {
+            readVertex(position, normalIndex, worldPointA).applyMatrix4(object.matrixWorld)
+            addIssueRegion('invalidNormals', {
+              objectName,
+              vertexIndex: normalIndex,
+              center: worldPointA.toArray(),
+            })
+          }
+        }
       }
     }
   })
@@ -160,8 +262,10 @@ export function analyzeMeshGeometry(root) {
 
   summary.topologyAnalysisComplete = summary.triangleCount > 0 && summary.topologySkippedTriangleCount === 0
   summary.degenerateTriangleRatio = summary.triangleCount ? summary.degenerateTriangleCount / summary.triangleCount : 0
+  summary.nearDegenerateTriangleRatio = summary.triangleCount ? summary.nearDegenerateTriangleCount / summary.triangleCount : 0
   summary.sliverTriangleRatio = summary.triangleCount ? summary.sliverTriangleCount / summary.triangleCount : 0
-  summary.analysisVersion = 'LOCAL_GEOMETRY_ANALYSIS_V2'
+  summary.analysisVersion = 'LOCAL_GEOMETRY_ANALYSIS_V3'
+  summary.issueRegionLimit = MAX_ISSUE_REGIONS_PER_TYPE
 
   return summary
 }

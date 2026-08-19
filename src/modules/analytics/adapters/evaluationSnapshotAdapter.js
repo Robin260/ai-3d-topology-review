@@ -72,7 +72,11 @@ export function adaptStorageRecord(record) {
 export function loadAnalyticsDataset() {
   const records = storageService.getRecords()
   const snapshots = records.map(adaptStorageRecord).filter(Boolean)
+  const comparisonRecords = records
+    .filter((record) => record.type === 'pk' && record.comparisonResult)
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
   const pendingRecords = storageService.getPendingRecords()
-  if (snapshots.length > 0) return { snapshots, pendingRecords, source: 'local', rejectedCount: records.length - snapshots.length }
-  return { snapshots: analyticsMockSnapshots, pendingRecords, source: 'mock', rejectedCount: records.length }
+  const rejectedCount = records.filter((record) => record.type === 'single' && !adaptStorageRecord(record)).length
+  if (snapshots.length > 0 || comparisonRecords.length > 0) return { snapshots, comparisonRecords, pendingRecords, source: 'local', rejectedCount }
+  return { snapshots: analyticsMockSnapshots, comparisonRecords: [], pendingRecords, source: 'mock', rejectedCount }
 }

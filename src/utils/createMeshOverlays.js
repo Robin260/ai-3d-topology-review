@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 
 const MAX_OVERLAY_TRIANGLES = 300000
+const AREA_EPSILON = 1e-12
+const SLIVER_QUALITY_THRESHOLD = 0.025
 
 const readVertex = (position, index, target) => {
   target.set(position.getX(index), position.getY(index), position.getZ(index))
@@ -104,6 +106,24 @@ export function attachTopologyOverlays(mesh) {
     return `${x},${y},${z}`
   })
   const edges = new Map()
+  const faces = new Map()
+  const duplicateFacePositions = []
+  const degenerateFacePositions = []
+  const nearDegenerateFacePositions = []
+  const sliverFacePositions = []
+  const pointA = new THREE.Vector3()
+  const pointB = new THREE.Vector3()
+  const pointC = new THREE.Vector3()
+  const edgeA = new THREE.Vector3()
+  const edgeB = new THREE.Vector3()
+
+  const appendTriangleEdges = (target, a, b, c) => {
+    target.push(
+      a.x, a.y, a.z, b.x, b.y, b.z,
+      b.x, b.y, b.z, c.x, c.y, c.z,
+      c.x, c.y, c.z, a.x, a.y, a.z,
+    )
+  }
 
   for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex += 1) {
     const offset = triangleIndex * 3
@@ -112,6 +132,30 @@ export function attachTopologyOverlays(mesh) {
       index ? index.getX(offset + 1) : offset + 1,
       index ? index.getX(offset + 2) : offset + 2,
     ]
+    readVertex(position, vertices[0], pointA)
+    readVertex(position, vertices[1], pointB)
+    readVertex(position, vertices[2], pointC)
+    const faceKey = vertices.map((vertexIndex) => vertexKeys[vertexIndex]).sort().join('|')
+    if (faces.has(faceKey)) appendTriangleEdges(duplicateFacePositions, pointA, pointB, pointC)
+    faces.set(faceKey, (faces.get(faceKey) || 0) + 1)
+
+    const abSquared = pointA.distanceToSquared(pointB)
+    const bcSquared = pointB.distanceToSquared(pointC)
+    const caSquared = pointC.distanceToSquared(pointA)
+    edgeA.subVectors(pointB, pointA)
+    edgeB.subVectors(pointC, pointA)
+    const doubleAreaSquared = edgeA.cross(edgeB).lengthSq()
+    const maximumEdgeSquared = Math.max(abSquared, bcSquared, caSquared)
+    const scaledAreaEpsilon = Math.max(AREA_EPSILON, maximumEdgeSquared * maximumEdgeSquared * 1e-12)
+    if (doubleAreaSquared === 0) {
+      appendTriangleEdges(degenerateFacePositions, pointA, pointB, pointC)
+    } else if (doubleAreaSquared <= scaledAreaEpsilon) {
+      appendTriangleEdges(nearDegenerateFacePositions, pointA, pointB, pointC)
+    } else {
+      const quality = 2 * Math.sqrt(3) * Math.sqrt(doubleAreaSquared)
+        / Math.max(abSquared + bcSquared + caSquared, Number.EPSILON)
+      if (quality < SLIVER_QUALITY_THRESHOLD) appendTriangleEdges(sliverFacePositions, pointA, pointB, pointC)
+    }
     ;[[0, 1], [1, 2], [2, 0]].forEach(([startOffset, endOffset]) => {
       const startIndex = vertices[startOffset]
       const endIndex = vertices[endOffset]
@@ -140,9 +184,12 @@ export function attachTopologyOverlays(mesh) {
   const overlays = {
     boundaries: createLineSegments(boundaryPositions, '#ff9b42'),
     nonManifold: createLineSegments(nonManifoldPositions, '#a96cff'),
+    duplicateFaces: createLineSegments(duplicateFacePositions, '#ef5c6c'),
+    degenerateFaces: createLineSegments(degenerateFacePositions, '#ff477e'),
+    nearDegenerateFaces: createLineSegments(nearDegenerateFacePositions, '#ff7a45'),
+    sliverFaces: createLineSegments(sliverFacePositions, '#f4cc46'),
   }
-  mesh.add(overlays.boundaries)
-  mesh.add(overlays.nonManifold)
+  Object.values(overlays).forEach((overlay) => mesh.add(overlay))
   mesh.userData.viewerTopologyOverlays = overlays
   return overlays
 }

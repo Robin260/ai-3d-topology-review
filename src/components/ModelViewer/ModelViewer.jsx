@@ -14,9 +14,10 @@ import './ModelViewer.css'
 
 const CAMERA_POSITION = [4.4, 2.8, 5.2]
 
-function CameraController({ resetToken }) {
+function CameraController({ resetToken, cameraState, onCameraChange, focusTarget }) {
   const { camera, gl } = useThree()
   const controls = useRef(null)
+  const applyingExternal = useRef(false)
 
   useEffect(() => {
     const orbitControls = new OrbitControls(camera, gl.domElement)
@@ -33,8 +34,54 @@ function CameraController({ resetToken }) {
     orbitControls.saveState()
     controls.current = orbitControls
 
-    return () => orbitControls.dispose()
-  }, [camera, gl])
+    const publishCamera = () => {
+      if (applyingExternal.current) return
+      onCameraChange?.({
+        position: camera.position.toArray(),
+        target: orbitControls.target.toArray(),
+        up: camera.up.toArray(),
+        zoom: camera.zoom,
+      })
+    }
+    orbitControls.addEventListener('change', publishCamera)
+
+    return () => {
+      orbitControls.removeEventListener('change', publishCamera)
+      orbitControls.dispose()
+    }
+  }, [camera, gl, onCameraChange])
+
+  useEffect(() => {
+    if (!cameraState || !controls.current) return
+    applyingExternal.current = true
+    camera.position.fromArray(cameraState.position)
+    camera.up.fromArray(cameraState.up || [0, 1, 0])
+    camera.zoom = cameraState.zoom || 1
+    camera.updateProjectionMatrix()
+    controls.current.target.fromArray(cameraState.target)
+    controls.current.update()
+    applyingExternal.current = false
+  }, [camera, cameraState])
+
+  useEffect(() => {
+    if (!focusTarget?.point || !controls.current) return
+    const target = new THREE.Vector3().fromArray(focusTarget.point)
+    const offset = camera.position.clone().sub(controls.current.target)
+    const distance = Math.max(offset.length(), 2.4)
+    if (offset.lengthSq() < Number.EPSILON) offset.set(1, 0.65, 1)
+    offset.setLength(distance)
+    applyingExternal.current = true
+    controls.current.target.copy(target)
+    camera.position.copy(target).add(offset)
+    controls.current.update()
+    applyingExternal.current = false
+    onCameraChange?.({
+      position: camera.position.toArray(),
+      target: controls.current.target.toArray(),
+      up: camera.up.toArray(),
+      zoom: camera.zoom,
+    })
+  }, [camera, focusTarget, onCameraChange])
 
   useEffect(() => {
     if (resetToken > 0) controls.current?.reset()
@@ -131,12 +178,22 @@ function LoadedScene({ source, format, overlayState, onLoad, onError, onLoadingC
         const maxDimension = Math.max(size.x, size.y, size.z, 0.001)
         const scale = 3 / maxDimension
         preparedScene.scale.setScalar(scale)
-        preparedScene.position.copy(center.multiplyScalar(-scale))
+        const displayOffset = center.clone().multiplyScalar(-scale)
+        preparedScene.position.copy(displayOffset)
         preparedScene.position.y -= 0.1
 
         setScene(preparedScene)
         onLoadingChange(false)
-        onLoad?.({ scene: preparedScene, source, format: resolvedFormat, analysis })
+        onLoad?.({
+          scene: preparedScene,
+          source,
+          format: resolvedFormat,
+          analysis,
+          displayTransform: {
+            scale,
+            position: preparedScene.position.toArray(),
+          },
+        })
       },
       undefined,
       (error) => {
@@ -199,8 +256,9 @@ function LoadedScene({ source, format, overlayState, onLoad, onError, onLoadingC
 
       const topologyOverlays = object.userData.viewerTopologyOverlays
       if (topologyOverlays) {
-        topologyOverlays.boundaries.visible = Boolean(overlayState.boundaries)
-        topologyOverlays.nonManifold.visible = Boolean(overlayState.nonManifold)
+        Object.entries(topologyOverlays).forEach(([overlayId, overlay]) => {
+          overlay.visible = Boolean(overlayState[overlayId])
+        })
       }
     })
   }, [overlayState, scene])
@@ -208,7 +266,7 @@ function LoadedScene({ source, format, overlayState, onLoad, onError, onLoadingC
   return scene ? <primitive object={scene} /> : null
 }
 
-function Scene({ source, format, overlayState, showGrid, resetToken, onLoad, onError, onLoadingChange }) {
+function Scene({ source, format, overlayState, showGrid, resetToken, cameraState, onCameraChange, focusTarget, onLoad, onError, onLoadingChange }) {
   return (
     <>
       <color attach="background" args={['#eef2f7']} />
@@ -230,7 +288,7 @@ function Scene({ source, format, overlayState, showGrid, resetToken, onLoad, onE
         <DemoGeometry wireframe={overlayState.wireframe} />
       )}
       {showGrid && <gridHelper args={[12, 12, '#b4c0ce', '#d6dde6']} position={[0, -2.05, 0]} />}
-      <CameraController resetToken={resetToken} />
+      <CameraController resetToken={resetToken} cameraState={cameraState} onCameraChange={onCameraChange} focusTarget={focusTarget} />
     </>
   )
 }
@@ -245,6 +303,10 @@ function ModelViewer({
   onError,
   showGrid: initialShowGrid = true,
   showOverlayControls = false,
+  cameraState = null,
+  onCameraChange,
+  activeOverlay = null,
+  focusTarget = null,
 }) {
   const [internalMode, setInternalMode] = useState('solid')
   const [showGrid, setShowGrid] = useState(initialShowGrid)
@@ -303,6 +365,21 @@ function ModelViewer({
     }
   }, [controlledMode, source])
 
+  useEffect(() => {
+    if (activeOverlay) setOverlayPanelOpen(true)
+    setOverlayState((current) => ({
+      ...current,
+      density: activeOverlay === 'density',
+      normals: activeOverlay === 'normals',
+      nonManifold: activeOverlay === 'nonManifold',
+      boundaries: activeOverlay === 'boundaries',
+      duplicateFaces: activeOverlay === 'duplicateFaces',
+      degenerateFaces: activeOverlay === 'degenerateFaces',
+      nearDegenerateFaces: activeOverlay === 'nearDegenerateFaces',
+      sliverFaces: activeOverlay === 'sliverFaces',
+    }))
+  }, [activeOverlay])
+
   return (
     <section className="model-viewer" aria-label="3D 模型查看器">
       <div className="model-viewer__toolbar">
@@ -319,36 +396,41 @@ function ModelViewer({
         </div>
       </div>
 
-      <div className="model-viewer__canvas" aria-label={canvasLabel}>
-        <Canvas
-          camera={{ position: CAMERA_POSITION, fov: 38, near: 0.1, far: 100 }}
-          dpr={[1, 1.75]}
-          gl={{ antialias: true, alpha: false }}
-          shadows
-        >
-          <Scene
-            source={source}
-            format={format}
-            overlayState={overlayState}
-            showGrid={showGrid}
-            resetToken={resetToken}
-            onLoad={handleLoadedScene}
-            onError={handleError}
-            onLoadingChange={setIsLoading}
-          />
-        </Canvas>
-        {isLoading && <div className="model-viewer__overlay" role="status"><span className="viewer-spinner" />正在读取模型…</div>}
-        {errorMessage && (
-          <div className="model-viewer__overlay is-error">
-            <ErrorNotice
-              compact
-              title="无法显示模型"
-              message={errorMessage}
-              guidance="模型文件只用于当前会话，请重新选择有效文件。"
+      <div className={`model-viewer__content${showOverlayControls && overlayPanelOpen ? ' is-overlay-open' : ''}`}>
+        <div className="model-viewer__canvas" aria-label={canvasLabel}>
+          <Canvas
+            camera={{ position: CAMERA_POSITION, fov: 38, near: 0.1, far: 100 }}
+            dpr={[1, 1.75]}
+            gl={{ antialias: true, alpha: false }}
+            shadows
+          >
+            <Scene
+              source={source}
+              format={format}
+              overlayState={overlayState}
+              showGrid={showGrid}
+              resetToken={resetToken}
+              cameraState={cameraState}
+              onCameraChange={onCameraChange}
+              focusTarget={focusTarget}
+              onLoad={handleLoadedScene}
+              onError={handleError}
+              onLoadingChange={setIsLoading}
             />
-          </div>
-        )}
-        {!source && <span className="model-viewer__demo-tag">程序生成 · 查看器自检对象</span>}
+          </Canvas>
+          {isLoading && <div className="model-viewer__overlay" role="status"><span className="viewer-spinner" />正在读取模型…</div>}
+          {errorMessage && (
+            <div className="model-viewer__overlay is-error">
+              <ErrorNotice
+                compact
+                title="无法显示模型"
+                message={errorMessage}
+                guidance="模型文件只用于当前会话，请重新选择有效文件。"
+              />
+            </div>
+          )}
+          {!source && <span className="model-viewer__demo-tag">程序生成 · 查看器自检对象</span>}
+        </div>
         {showOverlayControls && overlayPanelOpen && (
           <OverlayPanel
             values={overlayState}

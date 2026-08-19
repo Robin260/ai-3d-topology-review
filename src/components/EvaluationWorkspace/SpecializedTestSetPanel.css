@@ -1,0 +1,11 @@
+.specialized-test-set-panel { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 13px 15px; border: 1px solid #cdddf4; border-radius: 14px; background: linear-gradient(135deg, #f4f8ff, #fbfdff); }
+.specialized-test-set-panel > div:first-child { flex: 0 0 auto; display: grid; gap: 3px; }
+.specialized-test-set-panel > div:first-child span { color: var(--color-primary); font-size: 8px; font-weight: 800; letter-spacing: .08em; }
+.specialized-test-set-panel > div:first-child strong { font-size: 11px; }
+.specialized-test-set-panel > div:first-child small { color: var(--color-text-tertiary); font-size: 8px; }
+.specialized-test-set-models { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+.specialized-test-set-models button { min-height: 37px; display: grid; align-content: center; gap: 2px; padding: 0 9px; border: 1px solid var(--color-border); border-radius: 9px; color: var(--color-text-secondary); background: white; text-align: left; cursor: pointer; }
+.specialized-test-set-models button span { color: var(--color-text-tertiary); font-size: 7px; }
+.specialized-test-set-models button strong { font-size: 8px; }
+.specialized-test-set-models button.is-active { color: var(--color-primary); border-color: #a9c7f6; background: var(--color-primary-soft); }
+@media (max-width: 900px) { .specialized-test-set-panel { align-items: flex-start; flex-direction: column; } .specialized-test-set-models { justify-content: flex-start; } }

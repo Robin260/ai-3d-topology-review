@@ -54,6 +54,18 @@
 .analytics-source-grid strong { font-size: 20px; }
 .analytics-inline-select { display: flex; align-items: center; gap: 8px; }
 .analytics-inline-select span { color: var(--color-text-tertiary); font-size: 8px; }
+.analytics-history-stack { display: grid; gap: 16px; }
+.analytics-pk-records { display: grid; gap: 9px; }
+.analytics-pk-records article { display: grid; grid-template-columns: 38px minmax(220px, 1fr) 110px 120px auto; gap: 14px; align-items: center; padding: 13px; border: 1px solid var(--color-border-soft); border-radius: var(--radius-lg); background: var(--color-surface-muted); }
+.analytics-record-type { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; color: white; background: var(--color-primary); font-size: 9px; font-weight: 850; }
+.analytics-pk-models { display: grid; gap: 4px; min-width: 0; }
+.analytics-pk-models strong { overflow: hidden; color: var(--color-text-primary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.analytics-pk-models strong i { color: var(--color-primary); font-size: 8px; font-style: normal; }
+.analytics-pk-models small, .analytics-pk-winner small { color: var(--color-text-tertiary); font-size: 7px; }
+.analytics-pk-scores { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--color-text-primary); font-size: 14px; font-weight: 800; }
+.analytics-pk-scores i { color: var(--color-text-tertiary); font-size: 8px; font-style: normal; }
+.analytics-pk-winner { display: grid; gap: 3px; }
+.analytics-pk-winner strong { color: var(--color-primary); font-size: 10px; }
 .analytics-table-wrap { overflow-x: auto; }
 .analytics-table { width: 100%; border-collapse: collapse; font-size: 9px; }
 .analytics-table th { padding: 10px; color: var(--color-text-tertiary); background: var(--color-surface-muted); text-align: left; font-size: 8px; }
@@ -138,4 +150,6 @@
   .analytics-compare-summary > div:nth-child(3) { border-top: 1px solid var(--color-border-soft); border-left: 0; }
   .analytics-compare-summary > div:nth-child(4) { border-top: 1px solid var(--color-border-soft); }
   .analytics-change-list > div { grid-template-columns: 1fr 55px 20px 55px 55px; }
+  .analytics-pk-records article { grid-template-columns: 38px minmax(0, 1fr) auto; }
+  .analytics-pk-scores, .analytics-pk-winner { grid-column: 2; justify-content: start; }
 }

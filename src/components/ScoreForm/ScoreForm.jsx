@@ -54,14 +54,6 @@ function ScoreForm({
     onChange(nextValues, { ruleId: rule.id, result })
   }
 
-  const handleBatchConfirm = () => {
-    const nextValues = { ...values }
-    visibleRules.forEach((rule) => {
-      if (!isLockedAutomaticResult(values[rule.id])) nextValues[rule.id] = createManualRuleResult(rule.id, 5)
-    })
-    onChange?.(nextValues, { dimensionId: selectedDimension.id, action: 'batch_pass' })
-  }
-
   const handleClearManual = () => {
     const nextValues = { ...values }
     visibleRules.forEach((rule) => {
@@ -86,7 +78,6 @@ function ScoreForm({
           </label>
           {onChange && (
             <div className="rule-detail-panel__quick-actions">
-              <button type="button" disabled={disabled} onClick={handleBatchConfirm}>本维度未确认项设为通过</button>
               <button type="button" disabled={disabled} onClick={handleClearManual}>清除人工确认</button>
             </div>
           )}

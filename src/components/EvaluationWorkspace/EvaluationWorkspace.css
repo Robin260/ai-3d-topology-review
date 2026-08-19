@@ -1,0 +1,37 @@
+.evaluation-step-rail { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 18px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-xl); background: var(--color-surface); box-shadow: var(--shadow-card); }
+.evaluation-step-rail ol { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.evaluation-step { position: relative; min-height: 67px; display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; }
+.evaluation-step:not(:last-child)::after { content: ''; position: absolute; top: 27px; bottom: 0; left: 12px; width: 1px; background: var(--color-border); }
+.evaluation-step > span { position: relative; z-index: 1; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--color-border); border-radius: 50%; color: var(--color-text-tertiary); background: var(--color-background); font-size: 10px; font-weight: 800; }
+.evaluation-step > div { min-width: 0; display: grid; gap: 5px; padding-top: 4px; }
+.evaluation-step strong { color: var(--color-text-secondary); font-size: 11px; }
+.evaluation-step small { overflow: hidden; color: var(--color-text-tertiary); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.evaluation-step.is-current > span { color: white; border-color: var(--color-primary); background: var(--color-primary); }
+.evaluation-step.is-current strong { color: var(--color-primary); }
+.evaluation-step.is-complete > span { color: white; border-color: var(--color-success); background: var(--color-success); }
+.evaluation-step.is-complete:not(:last-child)::after { background: rgba(22, 136, 91, .35); }
+.evaluation-step.is-blocked > span { color: var(--color-error); border-color: rgba(210, 65, 65, .3); background: rgba(210, 65, 65, .08); }
+.evaluation-step-rail > .ui-button { width: 100%; }
+
+.role-insight-panel { min-width: 0; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-xl); background: var(--color-surface); box-shadow: var(--shadow-card); }
+.role-insight-tabs { display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px; background: var(--color-surface-muted); }
+.role-insight-tabs button { min-height: 34px; border: 0; border-radius: 8px; color: var(--color-text-secondary); background: transparent; font-size: 10px; font-weight: 700; cursor: pointer; }
+.role-insight-tabs button.is-active { color: var(--color-primary); background: white; box-shadow: var(--shadow-control); }
+.role-insight-content { min-height: 168px; padding: 18px 20px; }
+.role-insight-content > span { color: var(--color-text-tertiary); font-size: 8px; font-weight: 700; letter-spacing: .06em; }
+.role-insight-content h3 { margin: 7px 0 6px; color: var(--color-text-primary); font-size: 17px; }
+.role-insight-content p { margin: 0; color: var(--color-text-secondary); font-size: 10px; line-height: 1.6; }
+.role-insight-content ul { display: grid; gap: 5px; margin: 12px 0 0; padding-left: 17px; color: var(--color-text-secondary); font-size: 9px; }
+.chatgpt-handoff { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 16px; border-top: 1px solid var(--color-border-soft); background: #f7faff; }
+.chatgpt-handoff > div:first-child { display: grid; gap: 3px; }
+.chatgpt-handoff strong { color: var(--color-text-primary); font-size: 10px; }
+.chatgpt-handoff small { color: var(--color-text-tertiary); font-size: 8px; }
+.chatgpt-handoff > div:last-child { display: flex; gap: 8px; }
+
+@media (max-width: 720px) {
+  .evaluation-step-rail ol { grid-template-columns: repeat(5, minmax(90px, 1fr)); overflow-x: auto; }
+  .evaluation-step { min-width: 100px; min-height: 58px; grid-template-columns: 24px 1fr; }
+  .evaluation-step:not(:last-child)::after { display: none; }
+  .chatgpt-handoff { align-items: stretch; flex-direction: column; }
+  .chatgpt-handoff > div:last-child { display: grid; grid-template-columns: 1fr 1fr; }
+}

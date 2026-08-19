@@ -65,6 +65,7 @@ const createRecordShape = (record = {}) => {
     evaluationState: record.evaluationState || 'not_evaluated',
     productionContext: record.productionContext || null,
     modelReference: record.modelReference || null,
+    comparisonResult: record.comparisonResult || null,
   }
 }
 

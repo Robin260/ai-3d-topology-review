@@ -27,7 +27,7 @@ const systemModules = [
     title: '单模型质量评测',
     description: '导入一个低模，查看 3D 模型、七维质量分、问题证据和修改建议。',
     meta: '通用 → 专项 → 报告',
-    to: '/evaluate',
+    to: '/evaluate/universal',
     status: '框架可用',
   },
   {
@@ -67,7 +67,7 @@ function HomePage() {
             到交付结论、模型 PK 和数据分析的完整关系。
           </p>
           <div className="hero-actions">
-            <Button as={Link} to="/evaluate" iconAfter={<span>→</span>}>进入单模型评测</Button>
+            <Button as={Link} to="/evaluate/universal" iconAfter={<span>→</span>}>进入通用评测</Button>
             <Button as="a" variant="secondary" href="#system-map">查看完整结构</Button>
           </div>
         </div>

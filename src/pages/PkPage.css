@@ -1,0 +1,18 @@
+.pk-source-panel { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--color-border); border-radius: var(--radius-xl); background: var(--color-surface); box-shadow: var(--shadow-card); }
+.pk-source-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.pk-source-heading h2 { margin: 4px 0 0; font-size: 18px; }
+.pk-source-actions { display: flex; gap: 8px; }
+.pk-record-selectors { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; }
+.pk-record-selectors label { display: grid; gap: 7px; color: var(--color-text-secondary); font-size: 9px; font-weight: 700; }
+.pk-record-selectors select { width: 100%; min-height: 42px; padding: 0 12px; border: 1px solid var(--color-border); border-radius: 10px; color: var(--color-text-primary); background: white; font: inherit; }
+.pk-record-arrow { display: grid; place-items: center; width: 32px; height: 32px; margin-bottom: 5px; border-radius: 50%; color: var(--color-primary); background: var(--color-primary-soft); font-weight: 800; }
+.pk-source-note { margin: 0; color: var(--color-text-tertiary); font-size: 9px; line-height: 1.6; }
+.pk-save-message { margin: 0; padding: 9px 11px; border-radius: 9px; font-size: 9px; line-height: 1.5; }
+.pk-save-message.is-success { color: var(--color-success); background: color-mix(in srgb, var(--color-success) 8%, white); }
+.pk-save-message.is-error { color: var(--color-error); background: color-mix(in srgb, var(--color-error) 8%, white); }
+@media (max-width: 680px) { .pk-mode-panel, .pk-source-heading { align-items: flex-start; flex-direction: column; } .pk-record-selectors { grid-template-columns: 1fr; } .pk-record-arrow { display: none; } }
+.pk-mode-panel { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 16px; border: 1px solid var(--color-border); border-radius: 14px; background: white; box-shadow: var(--shadow-soft); }
+.pk-mode-panel > div:first-child { display: grid; gap: 3px; }
+.pk-mode-panel strong { font-size: 11px; }
+.pk-mode-panel span { color: var(--color-text-tertiary); font-size: 9px; }
+.pk-mode-panel > div:last-child { display: flex; flex-wrap: wrap; gap: 7px; }

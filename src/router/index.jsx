@@ -13,10 +13,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/home" replace /> },
       { path: 'home', element: <HomePage /> },
-      {
-        path: 'evaluate',
-        element: <EvaluateRoute />,
-      },
+      { path: 'evaluate', element: <Navigate to="/evaluate/universal" replace /> },
+      { path: 'evaluate/:evaluationStage', element: <EvaluateRoute /> },
       { path: 'pk', element: <PkRoute /> },
       { path: 'statistics', element: <StatisticsRoute /> },
       { path: '*', element: <NotFoundPage /> },

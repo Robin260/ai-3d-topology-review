@@ -80,6 +80,7 @@ function AnalyticsPage() {
 
       <div className="analytics-scope-row">
         <span>当前显示 <strong>{filtered.length}</strong> 条评测记录</span>
+        {dataset.comparisonRecords?.length > 0 && <span>已保存 <strong>{dataset.comparisonRecords.length}</strong> 条 PK 记录</span>}
         <span>Rubric：UNIVERSAL_RETOPO_V1</span>
         {dataset.rejectedCount > 0 && <span className="is-warning">{dataset.rejectedCount} 条未完成评测未计入正式统计</span>}
         {dataset.source === 'mock' && <span className="is-warning">本地没有可统计记录，当前使用演示快照</span>}
@@ -91,12 +92,13 @@ function AnalyticsPage() {
 
       {activeTab === 'pending' ? (
         <div className="analytics-tab-content"><AnalyticsPendingEvaluations records={dataset.pendingRecords || []} /></div>
+      ) : activeTab === 'history' && (filtered.length > 0 || dataset.comparisonRecords?.length > 0) ? (
+        <div className="analytics-tab-content"><AnalyticsHistory snapshots={sorted} comparisons={dataset.comparisonRecords || []} sortBy={sortBy} onSortChange={setSortBy} /></div>
       ) : filtered.length === 0 ? (
         <EmptyState compact eyebrow="当前筛选条件没有结果" title="没有可以分析的评测记录" description="请重置筛选条件，或者完成并保存一次模型评测。" actions={<Button onClick={resetFilters}>重置筛选</Button>} />
       ) : (
         <div className="analytics-tab-content">
           {activeTab === 'overview' && <AnalyticsOverview aggregate={aggregate} />}
-          {activeTab === 'history' && <AnalyticsHistory snapshots={sorted} sortBy={sortBy} onSortChange={setSortBy} />}
           {activeTab === 'compare' && <AnalyticsCompare leftSnapshots={leftSnapshots} rightSnapshots={rightSnapshots} leftId={leftId} rightId={rightId} onLeftChange={setLeftId} onRightChange={setRightId} comparison={comparison} />}
           {activeTab === 'reports' && <AnalyticsReports count={filtered.length} onExportJson={() => exportSnapshotsJson(filtered)} onExportCsv={() => exportSnapshotsCsv(filtered)} />}
         </div>

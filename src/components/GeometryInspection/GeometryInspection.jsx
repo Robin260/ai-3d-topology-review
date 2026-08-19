@@ -42,6 +42,7 @@ function GeometryInspection({ analysis, fileInfo, loading = false, hasError = fa
   }
 
   const warningCount = analysis.degenerateTriangleCount
+    + analysis.nearDegenerateTriangleCount
     + analysis.sliverTriangleCount
     + analysis.duplicateFaceCount
     + analysis.nonManifoldEdgeCount
@@ -54,7 +55,8 @@ function GeometryInspection({ analysis, fileInfo, loading = false, hasError = fa
     { label: '三角面', value: formatCount(analysis.triangleCount), note: '按加载后网格统计' },
     { label: '文件大小', value: formatFileSize(fileInfo?.size), note: fileInfo?.format?.toUpperCase() || '未知格式' },
     { label: '模型尺寸', value: formatDimensions(analysis.dimensions), note: '文件坐标单位' },
-    { label: '退化三角面', value: formatCount(analysis.degenerateTriangleCount), note: '零面积或近零面积' },
+    { label: '真正零面积面', value: formatCount(analysis.degenerateTriangleCount), note: '数学面积为 0' },
+    { label: '近退化三角面', value: formatCount(analysis.nearDegenerateTriangleCount), note: '面积非 0，但接近共线' },
     { label: '细长三角面', value: formatCount(analysis.sliverTriangleCount), note: '极端宽高比例' },
     { label: '重复面', value: formatCount(analysis.duplicateFaceCount), note: '完全相同三角面' },
     { label: '非流形边', value: formatCount(analysis.nonManifoldEdgeCount), note: analysis.topologyAnalysisComplete ? '拓扑分析完成' : '超大网格未完整分析' },

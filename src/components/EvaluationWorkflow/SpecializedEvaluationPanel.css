@@ -7,7 +7,7 @@
 .specialized-task-heading > div:last-child strong { color: var(--color-success); font-size: 30px; }
 .specialized-task-heading > div:last-child small { color: var(--color-text-secondary); font-size: 9px; }
 .specialized-task-rule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.specialized-task-rule-list article { min-width: 0; display: grid; grid-template-columns: 6px minmax(120px, .9fr) minmax(150px, 1fr) 96px; align-items: center; gap: 10px; padding: 12px; border: 1px solid #dce8e1; border-radius: 12px; background: rgba(255,255,255,.84); }
+.specialized-task-rule-list article { min-width: 0; display: grid; grid-template-columns: 6px minmax(120px, .72fr) minmax(220px, 1.35fr) 96px; align-items: center; gap: 10px; padding: 12px; border: 1px solid #dce8e1; border-radius: 12px; background: rgba(255,255,255,.84); }
 .specialized-task-rule-list article > i { width: 6px; height: 34px; border-radius: 999px; background: var(--color-success); }
 .specialized-task-rule-list article.is-reused > i { background: var(--color-primary); }
 .specialized-task-rule-list article > div:nth-child(2) { min-width: 0; display: grid; gap: 3px; }
@@ -17,7 +17,10 @@
 .specialized-task-rule-list article p { overflow: hidden; margin: 0; color: var(--color-text-tertiary); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .specialized-task-source { min-width: 0; display: grid; gap: 3px; }
 .specialized-task-source b { color: var(--color-text-secondary); font-size: 8px; }
-.specialized-task-source small { overflow: hidden; color: var(--color-text-tertiary); font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+.specialized-task-source small { color: var(--color-text-tertiary); font-size: 7px; line-height: 1.45; }
+.specialized-task-advice { display: grid; gap: 3px; margin-top: 3px; padding: 6px 7px; border-radius: 7px; background: var(--color-primary-soft); }
+.specialized-task-advice em { color: var(--color-primary); font-size: 7px; font-style: normal; font-weight: 700; line-height: 1.4; }
+.specialized-task-advice span { color: var(--color-text-secondary); font-size: 7px; line-height: 1.4; }
 .specialized-task-rule-list select { width: 96px; padding: 6px; border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text-secondary); background: white; font-size: 8px; }
 .specialized-task-rule-list select:disabled { background: var(--color-surface-muted); }
 .specialized-task-actions { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
@@ -50,4 +53,3 @@
   .specialized-task-source, .specialized-task-rule-list select { grid-column: 2; width: 100%; }
   .delivery-gate-score-grid { grid-template-columns: 1fr; }
 }
-

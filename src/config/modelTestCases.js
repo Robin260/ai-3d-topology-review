@@ -19,6 +19,26 @@ export const modelTestCases = Object.freeze([
     expected: '应生成非流形、重复面和零面积问题。',
     tone: 'warning',
   },
+  {
+    id: 'BUILTIN_OPEN_BOUNDARY',
+    name: '开放边界测试网格',
+    shortName: '开放边测试',
+    description: '程序定义的开放平面，用于验证孔洞 / 开放边界计数与区域定位。',
+    url: '/models/topology-open-boundary.obj',
+    format: 'obj',
+    expected: '应检测到 4 条开放边，并可定位到对应边界。',
+    tone: 'warning',
+  },
+  {
+    id: 'BUILTIN_SLIVER_TRIANGLE',
+    name: '狭长三角面测试网格',
+    shortName: '狭长面测试',
+    description: '程序定义的极端狭长三角面，用于验证面质量检测与区域定位。',
+    url: '/models/topology-sliver-triangle.obj',
+    format: 'obj',
+    expected: '应检测到狭长三角面，并保存可点击的面区域证据。',
+    tone: 'warning',
+  },
 ])
 
 export const getModelTestCase = (id) => modelTestCases.find((item) => item.id === id) || null

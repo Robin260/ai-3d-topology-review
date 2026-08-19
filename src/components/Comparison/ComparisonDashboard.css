@@ -9,6 +9,9 @@
 .pk-viewer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .pk-model-view { min-width: 0; overflow: hidden; border: 1px solid var(--color-border-soft); border-radius: var(--radius-lg); background: var(--color-surface-muted); }
 .pk-model-view .model-viewer { min-height: 420px; grid-template-rows: auto minmax(300px, 1fr) auto; border: 0; border-top: 1px solid var(--color-border-soft); border-radius: 0; box-shadow: none; }
+.pk-preview-unavailable { min-height: 420px; display: grid; place-content: center; gap: 8px; padding: 40px; border-top: 1px solid var(--color-border-soft); text-align: center; background: radial-gradient(circle at 50% 35%, #f4f8ff, var(--color-surface-muted)); }
+.pk-preview-unavailable strong { color: var(--color-text-primary); font-size: 13px; }
+.pk-preview-unavailable p { max-width: 360px; margin: 0; color: var(--color-text-tertiary); font-size: 9px; line-height: 1.7; }
 .pk-model-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; background: white; }
 .pk-model-header > div:first-child { min-width: 0; display: grid; gap: 3px; }
 .pk-model-header > div:first-child span { color: var(--color-primary); font-size: 8px; font-weight: 800; }

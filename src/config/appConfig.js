@@ -3,7 +3,8 @@ export const APP_SUBTITLE = 'AI 3D 拓扑低模评测'
 
 export const NAV_ITEMS = [
   { path: '/home', label: '评测标准', shortLabel: '标准' },
-  { path: '/evaluate', label: '单模型评测', shortLabel: '评测' },
+  { path: '/evaluate/universal', label: '通用评测', shortLabel: '通用' },
+  { path: '/evaluate/specialized', label: '专项评测', shortLabel: '专项' },
   { path: '/pk', label: '模型 PK', shortLabel: 'PK' },
   { path: '/statistics', label: '数据分析', shortLabel: '分析' },
 ]

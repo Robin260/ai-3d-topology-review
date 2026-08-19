@@ -86,10 +86,10 @@ function ProductionContextSelector({ value, onChange, baseEvaluation = null }) {
       <div className="production-context-heading">
         <div>
           <span className="section-kicker">SPECIALIZED PRODUCTION EVALUATION</span>
-          <h2>第二层 · 专项生产评测</h2>
-          <p>先记录来源，再用“生产流程 + 资产类型 + 目标平台”组合专项规则；通用分保持不变。</p>
+          <h2>专项生产评测</h2>
+          <p>可独立运行；若已有通用结果，系统会复用可靠证据并保持通用分不变。</p>
         </div>
-        <span className="info-chip">先通用 · 后专项 · 两套结论</span>
+        <span className="info-chip">可独立 · 可复用 · 两套结论</span>
       </div>
 
       <ChoiceGroup
@@ -145,8 +145,8 @@ function ProductionContextSelector({ value, onChange, baseEvaluation = null }) {
         <StatusCard
           tone={baseEvaluation ? 'success' : 'neutral'}
           label="第一层 · 通用基础评测"
-          title={baseEvaluation ? `${baseDisplayScore?.toFixed(1) ?? '—'} / 100 · ${baseIsPartial ? '部分自动结果' : `${baseEvaluation.grade} 级`}` : '未评测 · 无法给出基础分'}
-          description={baseEvaluation ? (baseIsPartial ? '只保留已测规则表现，覆盖不足时不生成正式基础等级。' : '保留已经得到的基础质量分和基础准入状态。') : '需要先完成通用规则检查；未检测项目不会按零分处理。'}
+          title={baseEvaluation ? `${baseDisplayScore?.toFixed(1) ?? '—'} / 100 · ${baseIsPartial ? '部分自动结果' : `${baseEvaluation.grade} 级`}` : '未评测 · 本次不生成通用分'}
+          description={baseEvaluation ? (baseIsPartial ? '只保留已测规则表现，覆盖不足时不生成正式基础等级。' : '保留已经得到的基础质量分和基础准入状态。') : '不阻断专项评测；通用网格健康与基础质量结论保持待评测。'}
           meta={baseEvaluation?.productionReadyBase || 'NOT_EVALUATED'}
         />
         <div className="score-not-equal" aria-label="两个分数不合并">≠</div>
@@ -168,7 +168,7 @@ function ProductionContextSelector({ value, onChange, baseEvaluation = null }) {
               <p>{modelSource ? `来源：${modelSource.name}（仅记录）` : '来源：尚未填写'} · {pipelineStage ? `阶段：${pipelineStage.name}` : '阶段：尚未填写'}</p>
             </div>
             <div className="rubric-summary-pills">
-              <strong>{composedRubric.rules.filter((rule) => rule.source === 'UNIVERSAL_REUSED').length} 条复用</strong>
+              <strong>{composedRubric.rules.filter((rule) => rule.source === 'UNIVERSAL_REUSED').length} 条{baseEvaluation ? '复用' : '可复用项转人工'}</strong>
               <strong>{composedRubric.rules.filter((rule) => rule.source === 'SPECIALIZED_NEW').length} 条新增</strong>
             </div>
           </div>
@@ -181,7 +181,7 @@ function ProductionContextSelector({ value, onChange, baseEvaluation = null }) {
                   <p>{rule.description}</p>
                 </div>
                 <div className="rule-origin">
-                  <b>{sourceLabels[rule.source]}</b>
+                  <b>{rule.source === 'UNIVERSAL_REUSED' && !baseEvaluation ? '专项独立确认' : sourceLabels[rule.source]}</b>
                   <small>{methodLabels[rule.method]}</small>
                   <em>{implementationLabels[rule.implementationStatus]}</em>
                 </div>

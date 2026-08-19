@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import ModelViewer from '../components/ModelViewer/ModelViewer.jsx'
 import ScoreForm from '../components/ScoreForm/ScoreForm.jsx'
 import GeometryInspection from '../components/GeometryInspection/GeometryInspection.jsx'
 import ProductionContextSelector from '../components/ProductionContext/ProductionContextSelector.jsx'
 import AutoEvaluationReport from '../components/AutoEvaluation/AutoEvaluationReport.jsx'
 import ModelTestPanel from '../components/ModelTestCases/ModelTestPanel.jsx'
-import EvaluationTaskControls from '../components/EvaluationWorkflow/EvaluationTaskControls.jsx'
 import UniversalCompletionPanel from '../components/EvaluationWorkflow/UniversalCompletionPanel.jsx'
 import SpecializedEvaluationPanel from '../components/EvaluationWorkflow/SpecializedEvaluationPanel.jsx'
+import EvaluationStepRail from '../components/EvaluationWorkspace/EvaluationStepRail.jsx'
+import RoleInsightPanel from '../components/EvaluationWorkspace/RoleInsightPanel.jsx'
+import SpecializedTestSetPanel from '../components/EvaluationWorkspace/SpecializedTestSetPanel.jsx'
+import SpecializedDataStatus from '../components/EvaluationWorkspace/SpecializedDataStatus.jsx'
 import { Button, StatusCard } from '../components/ui/index.js'
 import {
   universalExampleResult,
@@ -24,11 +27,11 @@ import {
   getProductionTarget,
   normalizeProductionContext,
 } from '../config/productionContext.js'
+import { streetLampTestGroup } from '../config/sceneTestModels.js'
 import { storageService } from '../services/storageService.js'
 import { generateAutomaticEvaluation } from '../services/automaticEvaluationEngine.js'
 import {
   buildUniversalEvaluationDraft,
-  createManualRuleResult,
 } from '../services/universalEvaluationWorkflow.js'
 import { buildSpecializedEvaluationDraft } from '../services/specializedEvaluationWorkflow.js'
 import { deliveryStatusCopy, evaluateDeliveryGates } from '../services/deliveryGateEngine.js'
@@ -49,7 +52,10 @@ const gateTones = {
 }
 
 function EvaluatePage() {
+  const navigate = useNavigate()
+  const { evaluationStage } = useParams()
   const [searchParams] = useSearchParams()
+  const pageStage = evaluationStage === 'specialized' ? 'specialized' : 'universal'
   const resumeRecordId = searchParams.get('resume')
   const fileInputRef = useRef(null)
   const referenceInputRef = useRef(null)
@@ -95,6 +101,12 @@ function EvaluatePage() {
   useEffect(() => {
     storageService.saveSettings({ productionContext })
   }, [productionContext])
+
+  useEffect(() => {
+    if (evaluationStage !== 'universal' && evaluationStage !== 'specialized') {
+      navigate('/evaluate/universal', { replace: true })
+    }
+  }, [evaluationStage, navigate])
 
   useEffect(() => {
     if (!resumeRecordId) return
@@ -202,6 +214,14 @@ function EvaluatePage() {
     setReportSaveStatus('idle')
   }
 
+  const handleSpecializedTestModelSelect = (testModel) => {
+    handleTestCaseSelect(testModel)
+    setProductionContext(normalizeProductionContext({
+      ...streetLampTestGroup.specializedPreset,
+      modelSourceId: testModel.sourceTypeId,
+    }))
+  }
+
   const automaticResult = useMemo(() => generateAutomaticEvaluation({
     analysis: geometryAnalysis,
     modelName,
@@ -223,7 +243,8 @@ function EvaluatePage() {
     context: productionContext,
     universalResult: finalUniversalResult,
     manualResults: specializedManualResults,
-  }), [finalUniversalResult, productionContext, specializedManualResults])
+    geometryAnalysis,
+  }), [finalUniversalResult, geometryAnalysis, productionContext, specializedManualResults])
   useEffect(() => {
     setSaveStatus('idle')
   }, [automaticResult?.evaluationId])
@@ -244,15 +265,24 @@ function EvaluatePage() {
   const productionContextComplete = Boolean(
     productionContext.productionTargetId && productionContext.assetTypeId && productionContext.platformProfileId,
   )
+  const productionContextLabels = {
+    target: getProductionTarget(productionContext.productionTargetId)?.name || '',
+    assetType: getAssetType(productionContext.assetTypeId)?.name || '',
+    platform: getPlatformProfile(productionContext.platformProfileId)?.name || '',
+    complete: productionContextComplete,
+  }
+  const stageQuery = searchParams.toString() ? `?${searchParams.toString()}` : ''
 
   const handleStartUniversalTask = () => {
     setActiveEvaluationStage('universal')
-    document.getElementById('model-evaluation-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (pageStage !== 'universal') navigate(`/evaluate/universal${stageQuery}`)
+    window.setTimeout(() => document.getElementById('model-evaluation-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
   }
 
   const handleStartSpecializedTask = () => {
     setActiveEvaluationStage('specialized')
-    document.getElementById('specialized-evaluation-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (pageStage !== 'specialized') navigate(`/evaluate/specialized${stageQuery}`)
+    window.setTimeout(() => document.getElementById('specialized-evaluation-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
   }
 
   const handleEvaluationModeChange = (nextMode) => {
@@ -269,23 +299,6 @@ function EvaluatePage() {
     setManualRuleResults(Object.fromEntries(
       Object.entries(nextValues).filter(([, value]) => value?.evaluatedBy === 'MANUAL_REVIEWER'),
     ))
-    setFinalUniversalResult(null)
-    setFormalSaveStatus('idle')
-    setSpecializedManualResults({})
-    setFinalSpecializedResult(null)
-    setGateResult(null)
-    setReportSaveStatus('idle')
-  }
-
-  const handleConfirmRemainingRules = () => {
-    if (!universalDraft) return
-    setManualRuleResults((current) => {
-      const next = { ...current }
-      universalDraft.readiness.missingRuleIds.forEach((ruleId) => {
-        next[ruleId] = createManualRuleResult(ruleId, 5)
-      })
-      return next
-    })
     setFinalUniversalResult(null)
     setFormalSaveStatus('idle')
     setSpecializedManualResults({})
@@ -331,7 +344,6 @@ function EvaluatePage() {
     if (!specializedDraft?.readiness?.isComplete || !specializedDraft.result) return
     const specializedResult = {
       ...specializedDraft.result,
-      evaluationState: 'COMPLETE_MANUAL_WITH_REUSE',
       generatedAt: new Date().toISOString(),
     }
     setFinalSpecializedResult(specializedResult)
@@ -422,7 +434,8 @@ function EvaluatePage() {
   }
 
   const handleSaveCompleteReport = () => {
-    if (!finalUniversalResult || !finalSpecializedResult || !gateResult) return
+    if (!finalSpecializedResult || !gateResult) return
+    const hasUniversalBaseline = Boolean(finalUniversalResult)
     const target = getProductionTarget(productionContext.productionTargetId)
     const assetType = getAssetType(productionContext.assetTypeId)
     const platform = getPlatformProfile(productionContext.platformProfileId)
@@ -432,23 +445,25 @@ function EvaluatePage() {
       id: resumeRecord?.id,
       type: 'single',
       modelA: {
-        modelId: modelReference.sourceId || finalUniversalResult.model.modelId,
+        modelId: modelReference.sourceId || finalUniversalResult?.model?.modelId || `SPECIALIZED_${Date.now()}`,
         name: modelName,
-        version: `complete-${new Date(finalSpecializedResult.generatedAt).toLocaleString('zh-CN')}`,
+        version: `${hasUniversalBaseline ? 'complete' : 'specialized'}-${new Date(finalSpecializedResult.generatedAt).toLocaleString('zh-CN')}`,
         sourceType: modelReference.sourceType,
         sourceLabel: declaredSource?.name || (modelReference.sourceType === 'BUILT_IN' ? '内置测试模型' : '本地上传'),
         format: modelFormat,
       },
-      scoresA: finalUniversalResult.dimensionScores,
-      totalScoreA: Number(finalUniversalResult.overallScore.toFixed(1)),
-      gradeA: finalUniversalResult.grade,
-      comment: `完整评测已完成：通用质量 ${finalUniversalResult.overallScore.toFixed(1)} 分，专项质量 ${finalSpecializedResult.overallScore.toFixed(1)} 分，交付状态为${deliveryStatusCopy[gateResult.deliveryStatus].name}。`,
-      rubricVersion: `${finalUniversalResult.rubricId}__${finalSpecializedResult.rubricVersion}`,
+      scoresA: finalUniversalResult?.dimensionScores || {},
+      totalScoreA: hasUniversalBaseline ? Number(finalUniversalResult.overallScore.toFixed(1)) : null,
+      gradeA: finalUniversalResult?.grade || null,
+      comment: hasUniversalBaseline
+        ? `完整评测已完成：通用质量 ${finalUniversalResult.overallScore.toFixed(1)} 分，专项质量 ${finalSpecializedResult.overallScore.toFixed(1)} 分，交付状态为${deliveryStatusCopy[gateResult.deliveryStatus].name}。`
+        : `独立专项评测已完成：专项质量 ${finalSpecializedResult.overallScore.toFixed(1)} 分，${deliveryStatusCopy[gateResult.deliveryStatus].name}；通用基础未评测。`,
+      rubricVersion: hasUniversalBaseline ? `${finalUniversalResult.rubricId}__${finalSpecializedResult.rubricVersion}` : finalSpecializedResult.rubricVersion,
       universalResult: finalUniversalResult,
       specializedResult: finalSpecializedResult,
       gateResult,
       deliveryStatus: gateResult.deliveryStatus,
-      evaluationState: 'complete',
+      evaluationState: hasUniversalBaseline ? 'complete' : 'specialized_complete',
       productionContext: {
         ...productionContext,
         targetName: target?.name || null,
@@ -466,26 +481,21 @@ function EvaluatePage() {
     <div className="page-stack universal-evaluation-page">
       <div className="page-heading-row universal-page-heading">
         <div>
-          <span className="section-kicker">Universal AI Low-Poly Retopology Rubric</span>
-          <h1>通用标准测评</h1>
-          <p>所有模型进入专项评测前必须完成的基础拓扑检查。</p>
+          <span className="section-kicker">{pageStage === 'specialized' ? 'SPECIALIZED PRODUCTION' : 'UNIVERSAL TOPOLOGY REVIEW'}</span>
+          <h1>{pageStage === 'specialized' ? '专项生产评测' : '通用标准评测'}</h1>
+          <p>{pageStage === 'specialized' ? '生产目标、资产类型、平台与交付门槛。' : '导入模型，完成基础检测与统一质量评分。'}</p>
         </div>
-        <div>
-          <input ref={fileInputRef} className="visually-hidden" type="file" accept=".glb,.gltf,.obj,.fbx,model/gltf-binary,model/gltf+json" onChange={handleFileChange} />
-          <Button onClick={() => fileInputRef.current?.click()}>导入低模</Button>
+        <div className="evaluation-page-tabs" aria-label="评测页面切换">
+          <Link className={pageStage === 'universal' ? 'is-active' : ''} to={`/evaluate/universal${stageQuery}`}>通用评测</Link>
+          <Link className={pageStage === 'specialized' ? 'is-active' : ''} to={`/evaluate/specialized${stageQuery}`}>专项评测</Link>
         </div>
       </div>
+      <input ref={fileInputRef} className="visually-hidden" type="file" accept=".glb,.gltf,.obj,.fbx,model/gltf-binary,model/gltf+json" onChange={handleFileChange} />
 
-      <div className="evaluation-stage-strip" aria-label="评测阶段">
-        <div className={activeEvaluationStage === 'universal' ? 'is-active' : activeEvaluationStage === 'specialized' ? 'is-configured' : ''}><span>1</span><strong>通用标准</strong><small>{activeEvaluationStage === 'universal' ? '任务进行中' : activeEvaluationStage === 'specialized' ? '已进入下一阶段' : '等待确认开始'}</small></div>
-        <div className={activeEvaluationStage === 'specialized' ? 'is-active is-specialized-active' : productionContextComplete ? 'is-configured' : ''}><span>2</span><strong>专项标准</strong><small>{activeEvaluationStage === 'specialized' ? '任务进行中' : productionContextComplete ? '生产上下文已选择' : '选择生产目标后启用'}</small></div>
-        <div className={gateResult ? `is-active is-delivery-${gateResult.deliveryStatus}` : ''}><span>3</span><strong>交付结论</strong><small>{gateResult ? deliveryStatusCopy[gateResult.deliveryStatus].name : '结合门槛与专项结果'}</small></div>
-      </div>
-
-      <div className="evaluation-mode-bar">
+      {pageStage === 'universal' && <div className="evaluation-mode-bar">
         <div>
           <strong>通用评测模式</strong>
-          <span>评测模式只决定适用规则，不会选择专项生产目标。</span>
+          <span>只决定基础规则范围</span>
         </div>
         <div className="mode-actions">
           <div className="mode-segmented" role="group" aria-label="通用评测模式">
@@ -506,18 +516,7 @@ function EvaluatePage() {
             </div>
           )}
         </div>
-      </div>
-
-      <EvaluationTaskControls
-        activeStage={activeEvaluationStage}
-        hasModel={Boolean(modelSource)}
-        hasUniversalResult={Boolean(finalUniversalResult)}
-        productionContextComplete={productionContextComplete}
-        onStartUniversal={handleStartUniversalTask}
-        onStartSpecialized={handleStartSpecializedTask}
-      />
-
-      <ModelTestPanel selectedId={selectedTestCaseId} onSelect={handleTestCaseSelect} />
+      </div>}
 
       {resumeStatus && (
         <section className={`resume-evaluation-banner is-${resumeStatus}`}>
@@ -532,7 +531,23 @@ function EvaluatePage() {
         </section>
       )}
 
-      <div className="universal-workspace-grid" id="model-evaluation-workspace">
+      {pageStage === 'universal' && <>
+      <details className="compact-utility-details">
+        <summary>使用内置测试模型</summary>
+        <ModelTestPanel selectedId={selectedTestCaseId} onSelect={handleTestCaseSelect} />
+      </details>
+
+      <div className="universal-workspace-grid evaluation-primary-workspace" id="model-evaluation-workspace">
+        <EvaluationStepRail
+          stage="universal"
+          modelName={modelName}
+          hasModel={Boolean(modelSource)}
+          automaticResult={automaticResult}
+          finalUniversalResult={finalUniversalResult}
+          activeStage={activeEvaluationStage}
+          onImport={() => fileInputRef.current?.click()}
+          onStartUniversal={handleStartUniversalTask}
+        />
         <ModelViewer
           source={modelSource}
           format={modelFormat}
@@ -591,27 +606,112 @@ function EvaluatePage() {
         </aside>
       </div>
 
-      <GeometryInspection
-        analysis={geometryAnalysis}
-        fileInfo={fileInfo}
-        loading={viewerState === '读取中'}
-        hasError={viewerState === '加载失败'}
-      />
+      <div className="evaluation-lower-workspace">
+        <section className="issue-snapshot-panel">
+          <div className="compact-panel-heading"><strong>问题证据</strong><span>{result?.issues?.length || 0} 项</span></div>
+          <div className="issue-snapshot-grid">
+            {(result?.issues || []).slice(0, 2).map((issue, index) => (
+              <article key={issue.issueId || `${issue.ruleId}-${index}`}>
+                <span>P{index + 1}</span>
+                <div><strong>{universalRules.find((rule) => rule.id === issue.ruleId)?.name || issue.title || issue.ruleId}</strong><p>{issue.evidence || issue.consequence || '等待补充证据'}</p></div>
+                <em>{issue.severity || 'REVIEW'}</em>
+              </article>
+            ))}
+            {!result?.issues?.length && <div className="issue-snapshot-empty">导入模型后显示可追溯的问题证据。</div>}
+          </div>
+        </section>
+        <RoleInsightPanel stage="universal" modelName={modelName} modelFormat={modelFormat} result={result} productionContext={productionContext} />
+      </div>
 
-      <AutoEvaluationReport result={automaticResult} onSave={handleSaveAutomaticResult} saveStatus={saveStatus} formalComplete={isFormalUniversalResult} />
+      <details className="compact-utility-details">
+        <summary>查看几何技术数据</summary>
+        <GeometryInspection
+          analysis={geometryAnalysis}
+          fileInfo={fileInfo}
+          loading={viewerState === '读取中'}
+          hasError={viewerState === '加载失败'}
+        />
+      </details>
 
-      <UniversalCompletionPanel
-        draft={universalDraft}
-        active={activeEvaluationStage === 'universal'}
-        finalResult={finalUniversalResult}
-        saveStatus={formalSaveStatus}
-        onConfirmRemaining={handleConfirmRemainingRules}
-        onFinalize={handleFinalizeUniversalResult}
-        onSave={handleSaveFormalUniversalResult}
-      />
+      {automaticResult && <details className="compact-utility-details">
+        <summary>查看全部自动检测证据</summary>
+        <AutoEvaluationReport result={automaticResult} onSave={handleSaveAutomaticResult} saveStatus={saveStatus} formalComplete={isFormalUniversalResult} />
+      </details>}
 
-      <section id="specialized-evaluation-workspace" className={activeEvaluationStage === 'specialized' ? 'specialized-task-focus' : ''}>
-        <ProductionContextSelector value={productionContext} onChange={handleProductionContextChange} baseEvaluation={result} />
+      <details id="universal-review-workspace" className={`universal-review-workspace${activeEvaluationStage === 'universal' ? ' is-active' : ''}${finalUniversalResult ? ' is-complete' : ''}`} open={activeEvaluationStage === 'universal' && !finalUniversalResult}>
+        <summary className="universal-review-heading">
+          <div><span className="section-kicker">RULE REVIEW</span><h2>规则确认与正式结果</h2></div>
+          <span className="info-chip">{finalUniversalResult ? '已完成' : activeEvaluationStage === 'universal' ? '进行中' : '开始评测后展开'}</span>
+        </summary>
+
+        <div className="universal-review-body">
+
+        <div className="universal-review-path" aria-label="通用评测内部流程">
+          <div className={automaticResult ? 'is-complete' : 'is-current'}><span>01</span><strong>自动基础检测</strong><small>{automaticResult ? `${universalDraft?.readiness.lockedAutomaticCount || 0} 条结果已锁定` : '等待导入模型'}</small></div>
+          <i>→</i>
+          <div className={finalUniversalResult ? 'is-complete' : automaticResult ? 'is-current' : ''}><span>02</span><strong>人工规则确认</strong><small>{universalDraft ? `${universalDraft.readiness.manualConfirmedCount}/${universalDraft.readiness.applicableRuleCount - universalDraft.readiness.lockedAutomaticCount} 条已确认` : '等待自动检测'}</small></div>
+          <i>→</i>
+          <div className={finalUniversalResult ? 'is-complete' : universalDraft?.readiness.isComplete ? 'is-current' : ''}><span>03</span><strong>正式通用结果</strong><small>{finalUniversalResult ? `${finalUniversalResult.overallScore.toFixed(1)} 分 · ${finalUniversalResult.grade} 级` : '完成全部规则后生成'}</small></div>
+        </div>
+
+        <ScoreForm
+          rubric={universalRubric}
+          rules={universalRules}
+          values={resultByRule}
+          issues={result?.issues || []}
+          mode={evaluationMode}
+          selectedDimensionId={selectedDimensionId}
+          onDimensionChange={setSelectedDimensionId}
+          onChange={automaticResult ? handleManualRuleChange : undefined}
+          disabled={activeEvaluationStage !== 'universal' || Boolean(finalUniversalResult)}
+        />
+
+        <UniversalCompletionPanel
+          draft={universalDraft}
+          active={activeEvaluationStage === 'universal'}
+          finalResult={finalUniversalResult}
+          saveStatus={formalSaveStatus}
+          onFinalize={handleFinalizeUniversalResult}
+          onSave={handleSaveFormalUniversalResult}
+        />
+        </div>
+      </details>
+      </>}
+
+      {pageStage === 'specialized' && <>
+      <SpecializedTestSetPanel selectedId={selectedTestCaseId} onSelect={handleSpecializedTestModelSelect} />
+      <div className="specialized-primary-workspace" id="specialized-evaluation-workspace">
+        <EvaluationStepRail
+          stage="specialized"
+          modelName={modelName}
+          hasModel={Boolean(modelSource)}
+          finalUniversalResult={finalUniversalResult}
+          finalSpecializedResult={finalSpecializedResult}
+          gateResult={gateResult}
+          productionContext={productionContext}
+          contextLabels={productionContextLabels}
+          activeStage={activeEvaluationStage}
+          onImport={() => fileInputRef.current?.click()}
+          onStartSpecialized={handleStartSpecializedTask}
+        />
+        <ModelViewer source={modelSource} format={modelFormat} modelName={modelName} onLoad={handleModelLoad} onError={handleModelError} showOverlayControls />
+        <aside className="specialized-summary-panel">
+          <span>专项评测总览</span>
+          <div><strong>{finalSpecializedResult?.overallScore?.toFixed(1) || '—'}</strong><small>/ 100</small></div>
+          <StatusCard compact tone={gateResult ? deliveryStatusCopy[gateResult.deliveryStatus].tone : 'neutral'} label={finalUniversalResult ? '交付状态' : '专项状态'} title={gateResult ? deliveryStatusCopy[gateResult.deliveryStatus].name : '等待专项结果'} meta={gateResult ? `${gateResult.blockerCount} 项阻断问题` : '专项分与门槛独立'} />
+          <dl>
+            <div><dt>通用基础</dt><dd>{finalUniversalResult ? `${finalUniversalResult.overallScore.toFixed(1)} 分` : '未提供 · 不阻断专项'}</dd></div>
+            <div><dt>生产目标</dt><dd>{productionContextLabels.target || '未选择'}</dd></div>
+            <div><dt>资产类型</dt><dd>{productionContextLabels.assetType || '未选择'}</dd></div>
+            <div><dt>平台</dt><dd>{productionContextLabels.platform || '未选择'}</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <SpecializedDataStatus analysis={geometryAnalysis} draft={specializedDraft} hasUniversalBaseline={Boolean(finalUniversalResult)} />
+
+      <section className="specialized-task-focus">
+        <ProductionContextSelector value={productionContext} onChange={handleProductionContextChange} baseEvaluation={finalUniversalResult} />
         <SpecializedEvaluationPanel
           draft={specializedDraft}
           active={activeEvaluationStage === 'specialized'}
@@ -624,26 +724,8 @@ function EvaluatePage() {
           saveStatus={reportSaveStatus}
         />
       </section>
-
-      <ScoreForm
-        rubric={universalRubric}
-        rules={universalRules}
-        values={resultByRule}
-        issues={result?.issues || []}
-        mode={evaluationMode}
-        selectedDimensionId={selectedDimensionId}
-        onDimensionChange={setSelectedDimensionId}
-        onChange={automaticResult ? handleManualRuleChange : undefined}
-        disabled={activeEvaluationStage !== 'universal' || Boolean(finalUniversalResult)}
-      />
-
-      <section className="boundary-note">
-        <span className="boundary-icon">i</span>
-        <div>
-          <strong>{gateResult ? `完整评测已生成：${deliveryStatusCopy[gateResult.deliveryStatus].name}` : isFormalUniversalResult ? '当前展示的是正式通用混合评测结果' : isAutomaticResult ? '当前展示的是本地真实部分自动评测' : (showDemoResult ? '当前展示的是规则文档中的演示评测结果' : '当前模型尚未完成真实检测')}</strong>
-          <p>{gateResult ? `通用质量分仍为 ${gateResult.qualityScoreUnchanged.toFixed(1)} 分；交付状态由 ${gateResult.blockerCount} 项阻断问题独立决定，分数没有被强行改低。` : isFormalUniversalResult ? '真实自动检测项保持锁定，其余规则来自人工确认；质量等级已经生成，下一步通过专项评测与硬性门槛生成独立交付状态。' : isAutomaticResult ? '几何计数、规则状态和问题证据来自当前导入模型；AI 视觉和边流等判断需要人工确认后才能形成正式结果。' : (showDemoResult ? '分数、问题和建议仅用于验证页面结构；真实几何检测、AI 视觉分析与热区定位仍属于后续阶段。' : '模型文件只用于当前会话预览。未运行检测的规则保持未评测，不会被当作零分。')}</p>
-        </div>
-      </section>
+      <RoleInsightPanel stage="specialized" modelName={modelName} modelFormat={modelFormat} result={finalSpecializedResult || specializedDraft?.result || finalUniversalResult} gateResult={gateResult} productionContext={productionContext} />
+      </>}
     </div>
   )
 }

@@ -53,6 +53,7 @@ const collectBlockers = (policies, values, source) => policies.flatMap((policy) 
 })
 
 export function evaluateDeliveryGates({ universalResult, specializedResult }) {
+  const hasUniversalBaseline = universalResult?.overallScore !== null && universalResult?.overallScore !== undefined
   const universalValues = readResults(universalResult)
   const specializedValues = readResults(specializedResult)
   const blockers = [
@@ -60,11 +61,17 @@ export function evaluateDeliveryGates({ universalResult, specializedResult }) {
     ...collectBlockers(specializedGatePolicies, specializedValues, 'SPECIALIZED'),
   ]
   const criticalCount = blockers.filter((item) => item.severity === 'CRITICAL').length
-  const deliveryStatus = blockers.length === 0
-    ? 'deliverable'
-    : criticalCount >= 3
-      ? 'do_not_proceed'
-      : 'fix_then_deliver'
+  const deliveryStatus = hasUniversalBaseline
+    ? blockers.length === 0
+      ? 'deliverable'
+      : criticalCount >= 3
+        ? 'do_not_proceed'
+        : 'fix_then_deliver'
+    : blockers.length === 0
+      ? 'specialized_pass'
+      : criticalCount >= 3
+        ? 'specialized_do_not_proceed'
+        : 'specialized_fix'
 
   return {
     schemaVersion: '1.0.0',
@@ -73,7 +80,9 @@ export function evaluateDeliveryGates({ universalResult, specializedResult }) {
     deliveryStatus,
     blockerCount: blockers.length,
     blockers,
-    qualityScoreUnchanged: universalResult?.overallScore ?? null,
+    qualityScoreUnchanged: universalResult?.overallScore ?? specializedResult?.overallScore ?? null,
+    evaluationScope: hasUniversalBaseline ? 'FULL' : 'SPECIALIZED_ONLY',
+    universalGateEvaluated: hasUniversalBaseline,
     evaluatedAt: new Date().toISOString(),
   }
 }
@@ -82,4 +91,7 @@ export const deliveryStatusCopy = Object.freeze({
   deliverable: { name: '可交付', tone: 'success', description: '当前硬性门槛均已通过，可以进入下一生产阶段。' },
   fix_then_deliver: { name: '修复后可交付', tone: 'warning', description: '整体质量分保留，但必须先修复阻断问题。' },
   do_not_proceed: { name: '不建议进入下一阶段', tone: 'error', description: '存在多个严重阻断问题，建议先返修基础结构。' },
+  specialized_pass: { name: '专项通过 · 通用待评测', tone: 'info', description: '专项规则已通过；通用基础未评测，因此暂不形成完整交付结论。' },
+  specialized_fix: { name: '专项修复后通过', tone: 'warning', description: '专项存在阻断问题；修复后可重新检查，通用基础仍待评测。' },
+  specialized_do_not_proceed: { name: '专项不建议继续', tone: 'error', description: '专项存在多个严重问题，建议先返修；通用基础仍待评测。' },
 })
